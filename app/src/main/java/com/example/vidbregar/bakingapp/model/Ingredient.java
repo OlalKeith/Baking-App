@@ -1,4 +1,4 @@
-package com.example.vidbregar.bakingapp.models;
+package com.example.vidbregar.bakingapp.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
