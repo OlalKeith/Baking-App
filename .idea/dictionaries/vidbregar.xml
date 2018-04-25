@@ -2,6 +2,7 @@
   <dictionary name="vidbregar">
     <words>
       <w>bregar</w>
+      <w>gson</w>
     </words>
   </dictionary>
 </component>

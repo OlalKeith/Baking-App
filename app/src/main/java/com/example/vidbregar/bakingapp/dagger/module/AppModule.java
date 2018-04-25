@@ -4,6 +4,8 @@ package com.example.vidbregar.bakingapp.dagger.module;
 import android.app.Application;
 import android.content.Context;
 
+import com.google.gson.Gson;
+
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -16,5 +18,11 @@ public class AppModule {
     @Provides
     Context provideApplicationContext(Application application) {
         return application;
+    }
+
+    @Singleton
+    @Provides
+    Gson provideGson() {
+        return new Gson();
     }
 }

@@ -3,9 +3,14 @@ package com.example.vidbregar.bakingapp.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-class Ingredient implements Parcelable {
+import com.google.gson.annotations.SerializedName;
+
+public class Ingredient implements Parcelable {
+    @SerializedName("ingredient")
     private String ingredientName;
+    @SerializedName("quantity")
     private double quantity;
+    @SerializedName("measure")
     private String measure;
 
     public Ingredient(String ingredientName, double quantity, String measure) {
