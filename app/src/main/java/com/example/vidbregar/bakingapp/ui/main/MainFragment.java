@@ -10,25 +10,24 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.Loader;
 
 import com.example.vidbregar.bakingapp.R;
 import com.example.vidbregar.bakingapp.model.Recipe;
 import com.example.vidbregar.bakingapp.ui.main.adapter.RecipesAdapter;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 
 import dagger.android.support.AndroidSupportInjection;
 
-public class MainFragment extends Fragment {
+public class MainFragment extends Fragment implements LoaderCallbacks<List<Recipe>> {
 
+    public static final String TAG = MainFragment.class.getSimpleName();
+    public static final int RECIPE_LIST_LOADER_ID = 10;
     private Context context;
 
     private RecyclerView recipesRecyclerView;
@@ -54,28 +53,24 @@ public class MainFragment extends Fragment {
         recipesAdapter = new RecipesAdapter();
         recipesRecyclerView.setAdapter(recipesAdapter);
 
-        String json = getJsonStringFromAssets();
-        Type listType = new TypeToken<ArrayList<Recipe>>() {
-        }.getType();
-        List<Recipe> recipes = gson.fromJson(json, listType);
-
-        recipesAdapter.setRecipes(recipes);
+        getLoaderManager().initLoader(RECIPE_LIST_LOADER_ID, null, this);
         return rootView;
     }
 
-    private String getJsonStringFromAssets() {
-        String json = null;
-        try {
-            InputStream inputStream = context.getAssets().open("recipe_listing.json");
-            int size = inputStream.available();
-            byte[] buffer = new byte[size];
-            inputStream.read(buffer);
-            inputStream.close();
-            json = new String(buffer, "UTF-8");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return json;
+    @NonNull
+    @Override
+    public Loader<List<Recipe>> onCreateLoader(int id, @Nullable Bundle args) {
+        return new RecipeLoader(context, gson);
     }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<List<Recipe>> loader, List<Recipe> recipes) {
+        recipesAdapter.setRecipes(recipes);
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader loader) {
+        recipesAdapter.setRecipes(null);
+    }
+
 }

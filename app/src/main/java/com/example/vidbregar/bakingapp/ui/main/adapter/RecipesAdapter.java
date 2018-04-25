@@ -17,7 +17,8 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.ViewHold
     List<Recipe> recipes;
 
     // List of recipes must be provided through setRecipes method
-    public RecipesAdapter() { }
+    public RecipesAdapter() {
+    }
 
     @NonNull
     @Override
@@ -51,7 +52,8 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.ViewHold
         }
     }
 
-    public void setRecipes(@NonNull List<Recipe> recipes) {
+    public void setRecipes(List<Recipe> recipes) {
         this.recipes = recipes;
+        notifyDataSetChanged();
     }
 }
