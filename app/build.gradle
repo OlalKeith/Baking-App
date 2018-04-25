@@ -44,6 +44,13 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxjava:2.1.12"
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
 
+    // RoundedImageView
+    implementation 'com.makeramen:roundedimageview:2.3.0'
+
+    // Glide
+    implementation 'com.github.bumptech.glide:glide:4.7.1'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
