@@ -22,6 +22,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import dagger.android.support.AndroidSupportInjection;
 
 public class MainFragment extends Fragment implements LoaderCallbacks<List<Recipe>> {
@@ -30,7 +32,8 @@ public class MainFragment extends Fragment implements LoaderCallbacks<List<Recip
     public static final int RECIPE_LIST_LOADER_ID = 10;
     private Context context;
 
-    private RecyclerView recipesRecyclerView;
+    @BindView(R.id.recipes_recycler_view)
+    RecyclerView recipesRecyclerView;
     private RecipesAdapter recipesAdapter;
     @Inject
     Gson gson;
@@ -47,7 +50,7 @@ public class MainFragment extends Fragment implements LoaderCallbacks<List<Recip
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         context = rootView.getContext();
 
-        recipesRecyclerView = rootView.findViewById(R.id.recipes_recycler_view);
+        ButterKnife.bind(this, rootView);
         RecyclerView.LayoutManager linearLayoutManager = new LinearLayoutManager(context);
         recipesRecyclerView.setLayoutManager(linearLayoutManager);
         recipesAdapter = new RecipesAdapter();

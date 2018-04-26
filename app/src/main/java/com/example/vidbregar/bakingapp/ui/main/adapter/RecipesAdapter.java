@@ -16,6 +16,9 @@ import com.makeramen.roundedimageview.RoundedImageView;
 
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.ViewHolder> {
 
     List<Recipe> recipes;
@@ -53,15 +56,16 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.ViewHold
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
+        @BindView(R.id.recipe_title_tv)
         TextView recipeTitleTextView;
+        @BindView(R.id.servings_number_tv)
         TextView servingsNumberTextView;
+        @BindView(R.id.recipe_thumbnail_iv)
         RoundedImageView recipeThumbnailImageView;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
-            recipeTitleTextView = itemView.findViewById(R.id.recipe_title_tv);
-            servingsNumberTextView = itemView.findViewById(R.id.servings_number_tv);
-            recipeThumbnailImageView = itemView.findViewById(R.id.recipe_thumbnail_iv);
+            ButterKnife.bind(this, itemView);
         }
     }
 
