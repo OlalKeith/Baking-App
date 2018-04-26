@@ -1,6 +1,7 @@
 package com.example.vidbregar.bakingapp.ui.main;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -16,6 +17,7 @@ import android.support.v4.content.Loader;
 import com.example.vidbregar.bakingapp.R;
 import com.example.vidbregar.bakingapp.model.Recipe;
 import com.example.vidbregar.bakingapp.ui.main.adapter.RecipesAdapter;
+import com.example.vidbregar.bakingapp.ui.recipe.RecipeActivity;
 import com.google.gson.Gson;
 
 import java.util.List;
@@ -26,10 +28,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import dagger.android.support.AndroidSupportInjection;
 
-public class MainFragment extends Fragment implements LoaderCallbacks<List<Recipe>> {
+public class MainFragment extends Fragment implements LoaderCallbacks<List<Recipe>>, RecipesAdapter.OnRecipeClickListener {
 
     public static final String TAG = MainFragment.class.getSimpleName();
     public static final int RECIPE_LIST_LOADER_ID = 10;
+    public static final String RECIPE_EXTRA_INTENT_DATA_KEY = "recipe-extra-intent-data-key";
     private Context context;
 
     @BindView(R.id.recipes_recycler_view)
@@ -53,7 +56,7 @@ public class MainFragment extends Fragment implements LoaderCallbacks<List<Recip
         ButterKnife.bind(this, rootView);
         RecyclerView.LayoutManager linearLayoutManager = new LinearLayoutManager(context);
         recipesRecyclerView.setLayoutManager(linearLayoutManager);
-        recipesAdapter = new RecipesAdapter();
+        recipesAdapter = new RecipesAdapter(this);
         recipesRecyclerView.setAdapter(recipesAdapter);
 
         getLoaderManager().initLoader(RECIPE_LIST_LOADER_ID, null, this);
@@ -76,4 +79,10 @@ public class MainFragment extends Fragment implements LoaderCallbacks<List<Recip
         recipesAdapter.setRecipes(null);
     }
 
+    @Override
+    public void onClick(Recipe recipe) {
+        Intent launchRecipeActivity = new Intent(getActivity(), RecipeActivity.class);
+        launchRecipeActivity.putExtra(RECIPE_EXTRA_INTENT_DATA_KEY, recipe);
+        startActivity(launchRecipeActivity);
+    }
 }

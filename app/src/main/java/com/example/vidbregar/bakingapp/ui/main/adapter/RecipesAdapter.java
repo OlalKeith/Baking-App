@@ -21,10 +21,16 @@ import butterknife.ButterKnife;
 
 public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.ViewHolder> {
 
-    List<Recipe> recipes;
+    public interface OnRecipeClickListener {
+        void onClick(Recipe recipe);
+    }
+
+    private List<Recipe> recipes;
+    private OnRecipeClickListener onRecipeClickListener;
 
     // List of recipes must be provided through setRecipes method
-    public RecipesAdapter() {
+    public RecipesAdapter(OnRecipeClickListener onRecipeClickListener) {
+        this.onRecipeClickListener = onRecipeClickListener;
     }
 
     @NonNull
@@ -39,7 +45,7 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.ViewHold
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int position) {
         Recipe recipe = recipes.get(position);
         viewHolder.recipeTitleTextView.setText(recipe.getName());
-        viewHolder.servingsNumberTextView.setText(Integer.toString(recipe.getServings()));
+        viewHolder.servingsNumberTextView.setText("" + recipe.getServings());
         String lastVideoUrl = recipe.getRecipeSteps().get(recipe.getRecipeSteps().size() - 1).getVideoUrl();
         RequestOptions requestOptions = new RequestOptions().
                 error(R.drawable.recipe_list_error_placeholder);
@@ -55,7 +61,7 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.ViewHold
         else return recipes.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         @BindView(R.id.recipe_title_tv)
         TextView recipeTitleTextView;
         @BindView(R.id.servings_number_tv)
@@ -66,6 +72,12 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.ViewHold
         ViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            onRecipeClickListener.onClick(recipes.get(getAdapterPosition()));
         }
     }
 
