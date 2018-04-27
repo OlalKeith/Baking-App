@@ -3,6 +3,7 @@ package com.example.vidbregar.bakingapp.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class Ingredient implements Parcelable {
@@ -12,6 +13,8 @@ public class Ingredient implements Parcelable {
     private double quantity;
     @SerializedName("measure")
     private String measure;
+    @Expose(serialize = false, deserialize = false)
+    private boolean isCheckedFromList;
 
     public Ingredient(String ingredientName, double quantity, String measure) {
         this.ingredientName = ingredientName;
@@ -36,6 +39,14 @@ public class Ingredient implements Parcelable {
             return new Ingredient[size];
         }
     };
+
+    public boolean isCheckedFromList() {
+        return isCheckedFromList;
+    }
+
+    public void setCheckedFromList(boolean checkedFromList) {
+        isCheckedFromList = checkedFromList;
+    }
 
     public String getIngredientName() {
         return ingredientName;

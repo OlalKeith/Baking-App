@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.example.vidbregar.bakingapp.R;
@@ -18,10 +19,15 @@ import butterknife.ButterKnife;
 
 public class IngredientsAdapter extends RecyclerView.Adapter<IngredientsAdapter.ViewHolder> {
 
+    public interface OnCheckboxClickListener {
+        void onCheckBoxClick(int position, boolean isCurrentlyChecked);
+    }
+
     private List<Ingredient> ingredients;
+    private OnCheckboxClickListener onCheckboxClickListener;
 
-    public IngredientsAdapter() {
-
+    public IngredientsAdapter(OnCheckboxClickListener onCheckboxClickListener) {
+        this.onCheckboxClickListener = onCheckboxClickListener;
     }
 
     @NonNull
@@ -36,6 +42,7 @@ public class IngredientsAdapter extends RecyclerView.Adapter<IngredientsAdapter.
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Ingredient ingredient = ingredients.get(position);
         holder.ingredientCheckbox.setText(ingredient.getIngredientName());
+        holder.ingredientCheckbox.setChecked(ingredient.isCheckedFromList());
         holder.quantityTextView.setText("" + ingredient.getQuantity());
         holder.measureTextView.setText(ingredient.getMeasure());
     }
@@ -46,7 +53,7 @@ public class IngredientsAdapter extends RecyclerView.Adapter<IngredientsAdapter.
         else return ingredients.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder implements CompoundButton.OnCheckedChangeListener{
 
         @BindView(R.id.ingredient_cb)
         CheckBox ingredientCheckbox;
@@ -55,9 +62,15 @@ public class IngredientsAdapter extends RecyclerView.Adapter<IngredientsAdapter.
         @BindView(R.id.ingredient_measure_tv)
         TextView measureTextView;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            ingredientCheckbox.setOnCheckedChangeListener(this);
+        }
+
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            onCheckboxClickListener.onCheckBoxClick(getAdapterPosition(), isChecked);
         }
     }
 

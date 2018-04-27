@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.vidbregar.bakingapp.R;
 import com.example.vidbregar.bakingapp.model.Recipe;
@@ -47,11 +48,13 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.ViewHold
         viewHolder.recipeTitleTextView.setText(recipe.getName());
         viewHolder.servingsNumberTextView.setText("" + recipe.getServings());
         String lastVideoUrl = recipe.getRecipeSteps().get(recipe.getRecipeSteps().size() - 1).getVideoUrl();
-        RequestOptions requestOptions = new RequestOptions().
-                error(R.drawable.recipe_list_error_placeholder);
+        RequestOptions requestOptions = new RequestOptions()
+                .error(R.drawable.recipe_list_error_placeholder)
+                .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC);
         Glide.with(viewHolder.itemView.getContext())
                 .setDefaultRequestOptions(requestOptions)
                 .load(Uri.parse(lastVideoUrl))
+                .thumbnail(0.1f)
                 .into(viewHolder.recipeThumbnailImageView);
     }
 
