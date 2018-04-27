@@ -39,7 +39,7 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
         if (launchIntent != null && launchIntent.hasExtra(MainFragment.RECIPE_EXTRA_INTENT_DATA_KEY)) {
             return launchIntent.getParcelableExtra(MainFragment.RECIPE_EXTRA_INTENT_DATA_KEY);
         }
-        throw new IllegalStateException("RecipeActivity must be launched via an Intent");
+        throw new IllegalStateException("RecipeActivity must be provided with extra data");
     }
 
     private void updateActivityNameWithRecipeName(Recipe recipe) {

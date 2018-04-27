@@ -1,32 +1,32 @@
 package com.example.vidbregar.bakingapp.ui.recipe;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.vidbregar.bakingapp.R;
-import com.example.vidbregar.bakingapp.model.Ingredient;
 import com.example.vidbregar.bakingapp.model.Recipe;
+import com.example.vidbregar.bakingapp.model.RecipeStep;
 import com.example.vidbregar.bakingapp.ui.recipe.adapter.IngredientsAdapter;
 import com.example.vidbregar.bakingapp.ui.recipe.adapter.RecipeStepsAdapter;
-import com.google.gson.annotations.Expose;
-
-import java.util.List;
+import com.example.vidbregar.bakingapp.ui.recipe_step.RecipeStepActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class RecipeFragment extends Fragment implements IngredientsAdapter.OnCheckboxClickListener {
+public class RecipeFragment extends Fragment implements IngredientsAdapter.OnCheckboxClickListener, RecipeStepsAdapter.OnRecipeStepClickListener {
 
     public static final String RECIPE_SAVE_STATE_KEY = "recipe-save-state-key";
+    public static final String RECIPE_STEP_EXTRA_KEY = "recipe-step-extra-key";
+    public static final String RECIPE_TITLE_EXTRA_KEY = "recipe-title-extra-key";
 
     private Context context;
     private Recipe recipe;
@@ -66,7 +66,7 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
         recipeStepsRecyclerView.setNestedScrollingEnabled(false);
         RecyclerView.LayoutManager recipeStepsLayoutManager = new LinearLayoutManager(context);
         recipeStepsRecyclerView.setLayoutManager(recipeStepsLayoutManager);
-        recipeStepsAdapter = new RecipeStepsAdapter(context);
+        recipeStepsAdapter = new RecipeStepsAdapter(context, this);
         recipeStepsRecyclerView.setAdapter(recipeStepsAdapter);
 
         return rootView;
@@ -87,5 +87,13 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable(RECIPE_SAVE_STATE_KEY, recipe);
+    }
+
+    @Override
+    public void onRecipeStepClick(RecipeStep recipeStep) {
+        Intent launchRecipeStepActivity = new Intent(getActivity(), RecipeStepActivity.class);
+        launchRecipeStepActivity.putExtra(RECIPE_STEP_EXTRA_KEY, recipeStep);
+        launchRecipeStepActivity.putExtra(RECIPE_TITLE_EXTRA_KEY, recipe.getName());
+        startActivity(launchRecipeStepActivity);
     }
 }

@@ -21,11 +21,17 @@ import butterknife.ButterKnife;
 
 public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.ViewHolder> {
 
+    public interface OnRecipeStepClickListener {
+        void onRecipeStepClick(RecipeStep recipeStep);
+    }
+
     private List<RecipeStep> recipeSteps;
     private Context context;
+    private OnRecipeStepClickListener onRecipeStepClickListener;
 
-    public RecipeStepsAdapter(Context context) {
+    public RecipeStepsAdapter(Context context, OnRecipeStepClickListener onRecipeStepClickListener) {
         this.context = context;
+        this.onRecipeStepClickListener = onRecipeStepClickListener;
     }
 
     @NonNull
@@ -49,7 +55,7 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.
         else return recipeSteps.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         @BindView(R.id.recipe_step_background_iv)
         RoundedImageView recipeStepBackgroundImageView;
@@ -59,6 +65,12 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.
         ViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            onRecipeStepClickListener.onRecipeStepClick(recipeSteps.get(getAdapterPosition()));
         }
     }
 
