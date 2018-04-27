@@ -10,6 +10,7 @@ import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -18,11 +19,11 @@ import java.util.List;
 class RecipeLoader extends AsyncTaskLoader<List<Recipe>> {
 
     private Gson gson;
-    private WeakReference<Context> contextWeakReference;
+    private SoftReference<Context> contextWeakReference;
 
     RecipeLoader(Context context, Gson gson) {
         super(context);
-        this.contextWeakReference = new WeakReference<>(context);
+        this.contextWeakReference = new SoftReference<>(context);
         this.gson = gson;
     }
 
