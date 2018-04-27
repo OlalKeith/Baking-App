@@ -35,7 +35,7 @@ public class MainFragment extends Fragment implements LoaderCallbacks<List<Recip
     public static final String RECIPE_EXTRA_INTENT_DATA_KEY = "recipe-extra-intent-data-key";
     private Context context;
 
-    @BindView(R.id.recipes_recycler_view)
+    @BindView(R.id.recipes_rv)
     RecyclerView recipesRecyclerView;
     private RecipesAdapter recipesAdapter;
     @Inject

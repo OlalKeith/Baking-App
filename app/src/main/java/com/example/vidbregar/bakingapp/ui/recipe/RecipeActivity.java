@@ -47,10 +47,8 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
     }
 
     private void passRecipeDataToFragment(Recipe recipe) {
-        Fragment recipeFragment = getSupportFragmentManager().findFragmentById(R.id.recipe_fragment);
-        Bundle recipeBundle = new Bundle(1);
-        recipeBundle.putParcelable(RECIPE_BUNDLE_KEY, recipe);
-        recipeFragment.setArguments(recipeBundle);
+        RecipeFragment recipeFragment = (RecipeFragment) getSupportFragmentManager().findFragmentById(R.id.recipe_fragment);
+        recipeFragment.setRecipeFromActivity(recipe);
     }
 
     @Override
