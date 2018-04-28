@@ -5,8 +5,8 @@
     android:layout_height="match_parent"
     tools:context=".ui.recipe_step.RecipeStepActivity">
 
-    <fragment
-        android:id="@+id/recipe_step_fragment"
+    <FrameLayout
+        android:id="@+id/recipe_step_fragment_container"
         android:name="com.example.vidbregar.bakingapp.ui.recipe_step.RecipeStepFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
