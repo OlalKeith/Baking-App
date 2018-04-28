@@ -103,7 +103,7 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
             recipeInstructionsContainer.setVisibility(View.GONE);
             prepareVideoPlayback();
         } else if (hasVideo) {
-            setLoadingIndicatorPosition();
+            setPlayerAndLoadingIndicatorSize();
             addInstructionsToViews();
             prepareVideoPlayback();
         } else {
@@ -112,15 +112,16 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
         }
     }
 
-    private void setLoadingIndicatorPosition() {
+    private void setPlayerAndLoadingIndicatorSize() {
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         int widthPixels = displayMetrics.widthPixels;
 
-        // calculate height of the video (1920x1080)
+        // Calculate height of the video (1920x1080)
         int videoHeightPixels = (1080 * widthPixels) / 1920;
         ViewGroup.LayoutParams layoutParams = videoLoadingProgressBar.getLayoutParams();
         layoutParams.height = videoHeightPixels;
         videoLoadingProgressBar.setLayoutParams(layoutParams);
+        recipeStepPlayerView.setLayoutParams(layoutParams);
     }
 
     private void addInstructionsToViews() {
