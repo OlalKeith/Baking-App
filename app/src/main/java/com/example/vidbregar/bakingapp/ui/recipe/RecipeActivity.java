@@ -19,7 +19,10 @@ import dagger.android.support.HasSupportFragmentInjector;
 
 public class RecipeActivity extends AppCompatActivity implements HasSupportFragmentInjector {
 
-    public static final String RECIPE_BUNDLE_KEY = "recipe-bundle-key";
+    public static final String RECIPE_SAVE_STATE_KEY = "recipe-save-state-key";
+
+    private Recipe recipe;
+
     @Inject
     DispatchingAndroidInjector<Fragment> fragmentDispatchingAndroidInjector;
 
@@ -28,27 +31,44 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
         AndroidInjection.inject(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe);
-        Recipe recipe = getRecipeFromLaunchingIntent();
-        updateActivityNameWithRecipeName(recipe);
-        passRecipeDataToFragment(recipe);
-
+        initialize(savedInstanceState);
+        updateActivityNameWithRecipeName();
+        passRecipeDataToFragment();
     }
 
-    private Recipe getRecipeFromLaunchingIntent() {
-        Intent launchIntent = getIntent();
-        if (launchIntent != null && launchIntent.hasExtra(MainFragment.RECIPE_EXTRA_INTENT_DATA_KEY)) {
-            return launchIntent.getParcelableExtra(MainFragment.RECIPE_EXTRA_INTENT_DATA_KEY);
+    private void initialize(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(RECIPE_SAVE_STATE_KEY)) {
+                recipe = savedInstanceState.getParcelable(RECIPE_SAVE_STATE_KEY);
+            }
+        } else {
+            getRecipeFromLaunchingIntent();
         }
-        throw new IllegalStateException("RecipeActivity must be provided with extra data");
     }
 
-    private void updateActivityNameWithRecipeName(Recipe recipe) {
+    private void getRecipeFromLaunchingIntent() {
+        Intent launchIntent = getIntent();
+        if (launchIntent != null) {
+            if (launchIntent.hasExtra(MainFragment.RECIPE_EXTRA_INTENT_DATA_KEY)) {
+                recipe = launchIntent.getParcelableExtra(MainFragment.RECIPE_EXTRA_INTENT_DATA_KEY);
+            }
+        }
+    }
+
+    private void updateActivityNameWithRecipeName() {
         getSupportActionBar().setTitle(recipe.getName());
     }
 
-    private void passRecipeDataToFragment(Recipe recipe) {
+    private void passRecipeDataToFragment() {
         RecipeFragment recipeFragment = (RecipeFragment) getSupportFragmentManager().findFragmentById(R.id.recipe_fragment);
+
         recipeFragment.setRecipeFromActivity(recipe);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(RECIPE_SAVE_STATE_KEY, recipe);
     }
 
     @Override

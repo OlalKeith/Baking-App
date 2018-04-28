@@ -27,6 +27,7 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
     public static final String RECIPE_SAVE_STATE_KEY = "recipe-save-state-key";
     public static final String RECIPE_STEP_EXTRA_KEY = "recipe-step-extra-key";
     public static final String RECIPE_TITLE_EXTRA_KEY = "recipe-title-extra-key";
+    public static final String RECIPE_EXTRA_KEY = "recipe-extra-key";
 
     private Context context;
     private Recipe recipe;
@@ -78,6 +79,7 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
         recipeStepsAdapter.setRecipeSteps(recipe.getRecipeSteps());
     }
 
+
     @Override
     public void onCheckBoxClick(int position, boolean isCurrentlyChecked) {
         this.recipe.getIngredients().get(position).setCheckedFromList(isCurrentlyChecked);
@@ -93,6 +95,7 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
     public void onRecipeStepClick(RecipeStep recipeStep) {
         Intent launchRecipeStepActivity = new Intent(getActivity(), RecipeStepActivity.class);
         launchRecipeStepActivity.putExtra(RECIPE_STEP_EXTRA_KEY, recipeStep);
+        launchRecipeStepActivity.putExtra(RECIPE_EXTRA_KEY, recipe);
         launchRecipeStepActivity.putExtra(RECIPE_TITLE_EXTRA_KEY, recipe.getName());
         startActivity(launchRecipeStepActivity);
     }

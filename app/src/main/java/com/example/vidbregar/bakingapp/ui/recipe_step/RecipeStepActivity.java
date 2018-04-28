@@ -5,8 +5,10 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MenuItem;
 
 import com.example.vidbregar.bakingapp.R;
+import com.example.vidbregar.bakingapp.model.Recipe;
 import com.example.vidbregar.bakingapp.model.RecipeStep;
 import com.example.vidbregar.bakingapp.ui.recipe.RecipeFragment;
 
@@ -29,7 +31,9 @@ public class RecipeStepActivity extends AppCompatActivity implements HasSupportF
     private static final String CURRENT_POSITION_SAVE_STATE_KEY = "current-position-save-state-key";
     private static final String IS_PLAYING_SAVE_STATE_KEY = "is-playing-save-state-key";
     private static final String RECIPE_TITLE_SAVE_STATE_KEY = "recipe-title-save-state-key";
+    private static final String RECIPE_SAVE_STATE_KEY = "recipe-save-state-key";
 
+    private Recipe recipe;
     private RecipeStep recipeStep;
     private long currentPosition = 0;
     private boolean isPlaying = true;
@@ -47,11 +51,13 @@ public class RecipeStepActivity extends AppCompatActivity implements HasSupportF
             if (savedInstanceState.containsKey(RECIPE_STEP_SAVE_STATE_KEY) &&
                     savedInstanceState.containsKey(CURRENT_POSITION_SAVE_STATE_KEY) &&
                     savedInstanceState.containsKey(IS_PLAYING_SAVE_STATE_KEY) &&
-                    savedInstanceState.containsKey(RECIPE_TITLE_SAVE_STATE_KEY)) {
+                    savedInstanceState.containsKey(RECIPE_TITLE_SAVE_STATE_KEY) &&
+                    savedInstanceState.containsKey(RECIPE_SAVE_STATE_KEY)) {
                 recipeStep = savedInstanceState.getParcelable(RECIPE_STEP_SAVE_STATE_KEY);
                 currentPosition = savedInstanceState.getLong(CURRENT_POSITION_SAVE_STATE_KEY);
                 isPlaying = savedInstanceState.getBoolean(IS_PLAYING_SAVE_STATE_KEY);
                 recipeTitle = savedInstanceState.getString(RECIPE_TITLE_SAVE_STATE_KEY);
+                recipe = savedInstanceState.getParcelable(RECIPE_SAVE_STATE_KEY);
                 updateActivityNameWithRecipeName(recipeTitle);
                 replaceFragment(prepareFragment(recipeStep, currentPosition, isPlaying));
             }
@@ -77,6 +83,9 @@ public class RecipeStepActivity extends AppCompatActivity implements HasSupportF
             if (launchIntent.hasExtra(RecipeFragment.RECIPE_TITLE_EXTRA_KEY)) {
                 recipeTitle = launchIntent.getStringExtra(RecipeFragment.RECIPE_TITLE_EXTRA_KEY);
                 updateActivityNameWithRecipeName(recipeTitle);
+            }
+            if (launchIntent.hasExtra(RecipeFragment.RECIPE_EXTRA_KEY)) {
+                recipe = launchIntent.getParcelableExtra(RecipeFragment.RECIPE_EXTRA_KEY);
             }
         } else {
             throw new IllegalStateException("RecipeStepActivity must be provided with extra data");
@@ -105,12 +114,24 @@ public class RecipeStepActivity extends AppCompatActivity implements HasSupportF
     }
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         RecipeStepFragment recipeStepFragment = (RecipeStepFragment) getSupportFragmentManager().findFragmentByTag(RECIPE_STEP_FRAGMENT_TAG);
         outState.putLong(CURRENT_POSITION_SAVE_STATE_KEY, recipeStepFragment.getCurrentPlayerPosition());
         outState.putBoolean(IS_PLAYING_SAVE_STATE_KEY, recipeStepFragment.isPlaying());
         outState.putString(RECIPE_TITLE_SAVE_STATE_KEY, recipeTitle);
         outState.putParcelable(RECIPE_STEP_SAVE_STATE_KEY, recipeStep);
+        outState.putParcelable(RECIPE_SAVE_STATE_KEY, recipe);
         super.onSaveInstanceState(outState);
     }
 
