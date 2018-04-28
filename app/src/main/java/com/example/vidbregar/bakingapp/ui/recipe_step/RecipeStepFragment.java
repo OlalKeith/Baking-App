@@ -13,10 +13,12 @@ import android.support.v4.app.Fragment;
 import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -67,6 +69,8 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
     @Nullable // Available only in landscape mode
     @BindView(R.id.recipe_instructions_container)
     ScrollView recipeInstructionsContainer;
+    @BindView(R.id.video_loading_progress_bar)
+    ProgressBar videoLoadingProgressBar;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -93,17 +97,30 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
 
     private void initialize() {
         boolean hasVideo = !recipeStep.getVideoUrl().isEmpty();
+        recipeStepPlayerView.setVisibility(View.GONE);
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE && hasVideo) {
             recipeStepContainer.setBackgroundColor(Color.BLACK);
             recipeInstructionsContainer.setVisibility(View.GONE);
             prepareVideoPlayback();
         } else if (hasVideo) {
+            setLoadingIndicatorPosition();
             addInstructionsToViews();
             prepareVideoPlayback();
         } else {
-            recipeStepPlayerView.setVisibility(View.GONE);
+            videoLoadingProgressBar.setVisibility(View.GONE);
             addInstructionsToViews();
         }
+    }
+
+    private void setLoadingIndicatorPosition() {
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        int widthPixels = displayMetrics.widthPixels;
+
+        // calculate height of the video (1920x1080)
+        int videoHeightPixels = (1080 * widthPixels) / 1920;
+        ViewGroup.LayoutParams layoutParams = videoLoadingProgressBar.getLayoutParams();
+        layoutParams.height = videoHeightPixels;
+        videoLoadingProgressBar.setLayoutParams(layoutParams);
     }
 
     private void addInstructionsToViews() {
@@ -157,15 +174,20 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
 
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-        if ((playbackState == Player.STATE_READY) && playWhenReady) {
-            playbackStateBuilder.setState(PlaybackStateCompat.STATE_PLAYING,
-                    simpleExoPlayer.getCurrentPosition(), 1f);
-            isPlaying = true;
-        } else if (playbackState == Player.STATE_READY) {
-            playbackStateBuilder.setState(PlaybackStateCompat.STATE_PAUSED,
-                    simpleExoPlayer.getCurrentPosition(), 1f);
-            isPlaying = false;
+        if (Player.STATE_READY == playbackState) {
+            videoLoadingProgressBar.setVisibility(View.GONE);
+            recipeStepPlayerView.setVisibility(View.VISIBLE);
+            if (playWhenReady) {
+                playbackStateBuilder.setState(PlaybackStateCompat.STATE_PLAYING,
+                        simpleExoPlayer.getCurrentPosition(), 1f);
+                isPlaying = true;
+            } else {
+                playbackStateBuilder.setState(PlaybackStateCompat.STATE_PAUSED,
+                        simpleExoPlayer.getCurrentPosition(), 1f);
+                isPlaying = false;
+            }
         }
+
     }
 
     class MediaSessionCallbacks extends MediaSessionCompat.Callback {
