@@ -52,6 +52,8 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
     private SimpleExoPlayer simpleExoPlayer;
     private static MediaSessionCompat mediaSession;
     private PlaybackStateCompat.Builder playbackStateBuilder;
+    private boolean isPlaying;
+    private long currentPlayerPosition;
 
     @BindView(R.id.recipe_step_player_view)
     PlayerView recipeStepPlayerView;
@@ -71,7 +73,9 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
         super.onCreate(savedInstanceState);
         Bundle args = getArguments();
         if (args != null) {
-            recipeStep = args.getParcelable(RecipeStepActivity.RECIPE_STEP_DATA_KEY);
+            recipeStep = args.getParcelable(RecipeStepActivity.RECIPE_STEP_ARGS_KEY);
+            currentPlayerPosition = args.getLong(RecipeStepActivity.CURRENT_POSITION_ARGS_KEY);
+            isPlaying = args.getBoolean(RecipeStepActivity.IS_PLAYING_ARGS_KEY);
         }
     }
 
@@ -81,7 +85,9 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
         View rootView = inflater.inflate(R.layout.fragment_recipe_step, container, false);
         context = rootView.getContext();
         ButterKnife.bind(this, rootView);
+
         initialize();
+
         return rootView;
     }
 
@@ -143,7 +149,9 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
                     new DefaultDataSourceFactory(context, userAgent))
                     .createMediaSource(videoUrl);
             simpleExoPlayer.prepare(mediaSource);
-            simpleExoPlayer.setPlayWhenReady(true);
+            simpleExoPlayer.seekTo(currentPlayerPosition);
+            simpleExoPlayer.setPlayWhenReady(isPlaying);
+            isPlaying = true;
         }
     }
 
@@ -152,26 +160,39 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
         if ((playbackState == Player.STATE_READY) && playWhenReady) {
             playbackStateBuilder.setState(PlaybackStateCompat.STATE_PLAYING,
                     simpleExoPlayer.getCurrentPosition(), 1f);
+            isPlaying = true;
         } else if (playbackState == Player.STATE_READY) {
             playbackStateBuilder.setState(PlaybackStateCompat.STATE_PAUSED,
                     simpleExoPlayer.getCurrentPosition(), 1f);
+            isPlaying = false;
         }
     }
 
     class MediaSessionCallbacks extends MediaSessionCompat.Callback {
+
         @Override
         public void onPlay() {
             simpleExoPlayer.setPlayWhenReady(true);
+            isPlaying = true;
         }
 
         @Override
         public void onPause() {
             simpleExoPlayer.setPlayWhenReady(false);
+            isPlaying = false;
         }
 
         @Override
         public void onSkipToPrevious() {
             simpleExoPlayer.seekTo(0);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (simpleExoPlayer != null) {
+            currentPlayerPosition = simpleExoPlayer.getCurrentPosition();
         }
     }
 
@@ -193,6 +214,14 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
             simpleExoPlayer.release();
             simpleExoPlayer = null;
         }
+    }
+
+    protected long getCurrentPlayerPosition() {
+        return currentPlayerPosition;
+    }
+
+    protected boolean isPlaying() {
+        return isPlaying;
     }
 
     public static class MediaReceiver extends BroadcastReceiver {
