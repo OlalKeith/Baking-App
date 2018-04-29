@@ -5,11 +5,14 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.vidbregar.bakingapp.R;
 import com.example.vidbregar.bakingapp.model.Recipe;
+import com.example.vidbregar.bakingapp.room.AppDatabase;
 import com.example.vidbregar.bakingapp.ui.main.MainFragment;
+import com.google.gson.Gson;
 
 import javax.inject.Inject;
 
@@ -23,6 +26,10 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
     public static final String RECIPE_SAVE_STATE_KEY = "recipe-save-state-key";
 
     private Recipe recipe;
+    @Inject
+    AppDatabase appDatabase;
+    @Inject
+    Gson gson;
 
     @Inject
     DispatchingAndroidInjector<Fragment> fragmentDispatchingAndroidInjector;
@@ -72,8 +79,18 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.recipe_menu, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.add_to_widget_action:
+                // TODO: 29/04/2018 Update widget
+                appDatabase.recipeDao().updateRecipe(gson.toJson(recipe));
+                return true;
             case android.R.id.home:
                 finish();
                 return true;
