@@ -22,16 +22,15 @@ import com.example.vidbregar.bakingapp.ui.recipe_step.RecipeStepActivity;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class RecipeFragment extends Fragment implements IngredientsAdapter.OnCheckboxClickListener, RecipeStepsAdapter.OnRecipeStepClickListener {
+public class RecipeFragment extends Fragment implements IngredientsAdapter.OnCheckboxClickListener,
+        RecipeStepsAdapter.OnRecipeStepClickListener {
 
-    public static final String RECIPE_SAVE_STATE_KEY = "recipe-save-state-key";
     public static final String RECIPE_STEP_EXTRA_KEY = "recipe-step-extra-key";
     public static final String RECIPE_TITLE_EXTRA_KEY = "recipe-title-extra-key";
-    public static final String RECIPE_EXTRA_KEY = "recipe-extra-key";
 
-    private Context context;
+    private static final String RECIPE_SAVE_STATE_KEY = "recipe-save-state-key";
+
     private Recipe recipe;
-
     private IngredientsAdapter ingredientsAdapter;
     private RecipeStepsAdapter recipeStepsAdapter;
 
@@ -47,15 +46,31 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_recipe, container, false);
-        context = rootView.getContext();
         ButterKnife.bind(this, rootView);
 
-        if (savedInstanceState != null && savedInstanceState.containsKey(RECIPE_SAVE_STATE_KEY)) {
+        initialize(savedInstanceState, rootView.getContext());
+
+        return rootView;
+    }
+
+    private void initialize(Bundle savedInstanceState, Context context) {
+        if (savedInstanceState != null) {
+            restoreFromSavedInstanceState(savedInstanceState);
+        }
+        prepareIngredientAndRecipeStepLists(context);
+    }
+
+    private void restoreFromSavedInstanceState(Bundle savedInstanceState) {
+        if (savedInstanceState.containsKey(RECIPE_SAVE_STATE_KEY)) {
             recipe = savedInstanceState.getParcelable(RECIPE_SAVE_STATE_KEY);
         }
+    }
 
+    private void prepareIngredientAndRecipeStepLists(Context context) {
         // Ingredients list
         ingredientsRecyclerView.setNestedScrollingEnabled(false);
         RecyclerView.LayoutManager ingredientLayoutManager = new LinearLayoutManager(context);
@@ -69,11 +84,9 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
         recipeStepsRecyclerView.setLayoutManager(recipeStepsLayoutManager);
         recipeStepsAdapter = new RecipeStepsAdapter(context, this);
         recipeStepsRecyclerView.setAdapter(recipeStepsAdapter);
-
-        return rootView;
     }
 
-    public void setRecipeFromActivity(Recipe recipe) {
+    public void setRecipe(Recipe recipe) {
         this.recipe = recipe;
         ingredientsAdapter.setIngredients(recipe.getIngredients());
         recipeStepsAdapter.setRecipeSteps(recipe.getRecipeSteps());
@@ -95,7 +108,6 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
     public void onRecipeStepClick(RecipeStep recipeStep) {
         Intent launchRecipeStepActivity = new Intent(getActivity(), RecipeStepActivity.class);
         launchRecipeStepActivity.putExtra(RECIPE_STEP_EXTRA_KEY, recipeStep);
-        launchRecipeStepActivity.putExtra(RECIPE_EXTRA_KEY, recipe);
         launchRecipeStepActivity.putExtra(RECIPE_TITLE_EXTRA_KEY, recipe.getName());
         startActivity(launchRecipeStepActivity);
     }

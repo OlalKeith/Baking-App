@@ -3,6 +3,7 @@ package com.example.vidbregar.bakingapp.ui.main;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -33,12 +34,13 @@ import retrofit2.Retrofit;
 
 public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeClickListener {
 
-    public static final String TAG = MainFragment.class.getSimpleName();
-    public static final String RECIPE_EXTRA_INTENT_DATA_KEY = "recipe-extra-intent-data-key";
+    public static final String RECIPE_EXTRA_KEY = "recipe-extra-key";
+    private static final String LIST_POSITION_SAVE_STATE_KEY = "list-position-save-state-key";
 
-    private Context context;
     private RecipesAdapter recipesAdapter;
     private Disposable recipeDisposable;
+    private RecyclerView.LayoutManager linearLayoutManager;
+    private Parcelable listPositionState;
 
     @Inject
     Retrofit retrofit;
@@ -54,18 +56,35 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        context = rootView.getContext();
-
         ButterKnife.bind(this, rootView);
-        RecyclerView.LayoutManager linearLayoutManager = new LinearLayoutManager(context);
+
+        initialize(rootView.getContext(), savedInstanceState);
+
+        return rootView;
+    }
+
+    private void initialize(Context context, Bundle savedInstanceState) {
+        prepareRecipeList(context, savedInstanceState);
+        sendNetworkGetRequest();
+    }
+
+    private void prepareRecipeList(Context context, Bundle savedInstanceState) {
+        linearLayoutManager = new LinearLayoutManager(context);
+        restoreListPosition(savedInstanceState);
         recipesRecyclerView.setLayoutManager(linearLayoutManager);
         recipesAdapter = new RecipesAdapter(this);
         recipesRecyclerView.setAdapter(recipesAdapter);
+    }
 
-        sendNetworkGetRequest();
-        return rootView;
+    private void restoreListPosition(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(LIST_POSITION_SAVE_STATE_KEY))
+                listPositionState = savedInstanceState.getParcelable(LIST_POSITION_SAVE_STATE_KEY);
+        }
     }
 
     private void sendNetworkGetRequest() {
@@ -73,17 +92,25 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
         Observable<List<Recipe>> recipes = recipeService.getRecipes();
         recipeDisposable = recipes.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe((data) -> recipesAdapter.setRecipes(data));
+                .subscribe((data) -> {
+                    recipesAdapter.setRecipes(data);
+                    linearLayoutManager.onRestoreInstanceState(listPositionState);
+                });
 
     }
 
     @Override
     public void onClick(Recipe recipe) {
         Intent launchRecipeActivity = new Intent(getActivity(), RecipeActivity.class);
-        launchRecipeActivity.putExtra(RECIPE_EXTRA_INTENT_DATA_KEY, recipe);
+        launchRecipeActivity.putExtra(RECIPE_EXTRA_KEY, recipe);
         startActivity(launchRecipeActivity);
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(LIST_POSITION_SAVE_STATE_KEY, linearLayoutManager.onSaveInstanceState());
+    }
 
     @Override
     public void onDestroy() {

@@ -47,6 +47,10 @@ public class RecipesAdapter extends RecyclerView.Adapter<RecipesAdapter.ViewHold
         Recipe recipe = recipes.get(position);
         viewHolder.recipeTitleTextView.setText(recipe.getName());
         viewHolder.servingsNumberTextView.setText("" + recipe.getServings());
+        setVideoThumbnail(viewHolder, recipe);
+    }
+
+    private void setVideoThumbnail(ViewHolder viewHolder, Recipe recipe) {
         String lastVideoUrl = recipe.getRecipeSteps().get(recipe.getRecipeSteps().size() - 1).getVideoUrl();
         RequestOptions requestOptions = new RequestOptions()
                 .error(R.drawable.recipe_list_error_placeholder)

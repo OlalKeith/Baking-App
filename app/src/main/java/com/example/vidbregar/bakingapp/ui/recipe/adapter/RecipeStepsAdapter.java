@@ -49,6 +49,15 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.
         viewHolder.recipeStepBackgroundImageView.setBackgroundColor(getRandomColor());
     }
 
+    private int getRandomColor() {
+        int color;
+        TypedArray colorsArray = context.getResources().obtainTypedArray(R.array.mdcolor_500);
+        int index = (int) (Math.random() * colorsArray.length());
+        color = colorsArray.getColor(index, Color.BLACK);
+        colorsArray.recycle();
+        return color;
+    }
+
     @Override
     public int getItemCount() {
         if (recipeSteps == null) return 0;
@@ -77,14 +86,5 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.
     public void setRecipeSteps(List<RecipeStep> recipeSteps) {
         this.recipeSteps = recipeSteps;
         notifyDataSetChanged();
-    }
-
-    private int getRandomColor() {
-        int color;
-        TypedArray colorsArray = context.getResources().obtainTypedArray(R.array.mdcolor_500);
-        int index = (int) (Math.random() * colorsArray.length());
-        color = colorsArray.getColor(index, Color.BLACK);
-        colorsArray.recycle();
-        return color;
     }
 }

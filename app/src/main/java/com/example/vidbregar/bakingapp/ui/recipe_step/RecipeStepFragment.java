@@ -63,19 +63,22 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
     TextView recipeStepTitleTextView;
     @BindView(R.id.recipe_step_description_tv)
     TextView recipeStepDescriptionTextView;
-    @Nullable // Available only in landscape mode
+    @Nullable
     @BindView(R.id.recipe_step_container_frame_layout)
-    FrameLayout recipeStepContainer;
-    @Nullable // Available only in landscape mode
+    FrameLayout recipeStepContainer; // Available only in landscape mode
+    @Nullable
     @BindView(R.id.recipe_instructions_container)
-    ScrollView recipeInstructionsContainer;
+    ScrollView recipeInstructionsContainer; // Available only in landscape mode
     @BindView(R.id.video_loading_progress_bar)
     ProgressBar videoLoadingProgressBar;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Bundle args = getArguments();
+        getArgumentsFromActivity(getArguments());
+    }
+
+    private void getArgumentsFromActivity(Bundle args) {
         if (args != null) {
             recipeStep = args.getParcelable(RecipeStepActivity.RECIPE_STEP_ARGS_KEY);
             currentPlayerPosition = args.getLong(RecipeStepActivity.CURRENT_POSITION_ARGS_KEY);
@@ -85,7 +88,9 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_recipe_step, container, false);
         context = rootView.getContext();
         ButterKnife.bind(this, rootView);
@@ -97,26 +102,44 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
 
     private void initialize() {
         boolean hasVideo = !recipeStep.getVideoUrl().isEmpty();
+        // It will be visible when video is ready to play
         recipeStepPlayerView.setVisibility(View.GONE);
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE && hasVideo) {
-            recipeStepContainer.setBackgroundColor(Color.BLACK);
-            recipeInstructionsContainer.setVisibility(View.GONE);
-            prepareVideoPlayback();
+            initializeLandscapeLayoutWithVideo();
         } else if (hasVideo) {
-            setPlayerAndLoadingIndicatorSize();
-            addInstructionsToViews();
-            prepareVideoPlayback();
+            initializePortraitLayoutWithVideo();
         } else {
-            videoLoadingProgressBar.setVisibility(View.GONE);
-            addInstructionsToViews();
+            initializeLayoutWithoutVideo();
         }
+    }
+
+    private void initializeLandscapeLayoutWithVideo() {
+        recipeStepContainer.setBackgroundColor(Color.BLACK);
+        recipeInstructionsContainer.setVisibility(View.GONE);
+        prepareVideoPlayback();
+    }
+
+    private void initializePortraitLayoutWithVideo() {
+        setPlayerAndLoadingIndicatorSize();
+        addInstructionsToViews();
+        prepareVideoPlayback();
+    }
+
+    private void initializeLayoutWithoutVideo() {
+        videoLoadingProgressBar.setVisibility(View.GONE);
+        addInstructionsToViews();
+    }
+
+    private void prepareVideoPlayback() {
+        initializeMediaSession();
+        initializePlayer(Uri.parse(recipeStep.getVideoUrl()));
     }
 
     private void setPlayerAndLoadingIndicatorSize() {
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         int widthPixels = displayMetrics.widthPixels;
 
-        // Calculate height of the video (1920x1080)
+        // Calculate height of the video player (video is 1920x1080)
         int videoHeightPixels = (1080 * widthPixels) / 1920;
         ViewGroup.LayoutParams layoutParams = videoLoadingProgressBar.getLayoutParams();
         layoutParams.height = videoHeightPixels;
@@ -127,11 +150,6 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
     private void addInstructionsToViews() {
         recipeStepTitleTextView.setText(recipeStep.getShortDescription());
         recipeStepDescriptionTextView.setText(recipeStep.getDescription());
-    }
-
-    private void prepareVideoPlayback() {
-        initializeMediaSession();
-        initializePlayer(Uri.parse(recipeStep.getVideoUrl()));
     }
 
     private void initializeMediaSession() {
