@@ -4,8 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="200dp"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="10dp">
+    android:layout_marginBottom="5dp"
+    android:layout_marginLeft="8dp"
+    android:layout_marginRight="8dp"
+    android:layout_marginTop="5dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="4dp">
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
@@ -44,7 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
-            android:layout_marginLeft="16dp"
+            android:layout_marginLeft="1dp"
             android:layout_marginStart="16dp"
             android:text="Servings:"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -54,7 +58,10 @@
             android:id="@+id/servings_number_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="8dp"
+            android:paddingEnd="4dp"
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp"
+            android:paddingStart="4dp"
             app:layout_constraintBottom_toTopOf="@+id/servings_label_tv"
             app:layout_constraintLeft_toRightOf="@+id/servings_label_tv"
             app:layout_constraintTop_toBottomOf="@+id/servings_label_tv"

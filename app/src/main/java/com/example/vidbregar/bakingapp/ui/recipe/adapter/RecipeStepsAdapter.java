@@ -51,7 +51,7 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.
 
     private int getRandomColor() {
         int color;
-        TypedArray colorsArray = context.getResources().obtainTypedArray(R.array.mdcolor_500);
+        TypedArray colorsArray = context.getResources().obtainTypedArray(R.array.md_color_500);
         int index = (int) (Math.random() * colorsArray.length());
         color = colorsArray.getColor(index, Color.BLACK);
         colorsArray.recycle();

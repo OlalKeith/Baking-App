@@ -5,6 +5,21 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <CheckBox
+        android:id="@+id/ingredient_cb"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:textColor="@android:color/black"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Mascapone Cheese(room temperature)" />
+
     <TextView
         android:id="@+id/ingredient_quantity_tv"
         android:layout_width="wrap_content"
@@ -15,7 +30,7 @@
         android:textSize="14sp"
         app:layout_constraintBaseline_toBaselineOf="@+id/ingredient_cb"
         app:layout_constraintStart_toEndOf="@+id/ingredient_cb"
-        tools:text="5" />
+        tools:text="500.0" />
 
     <TextView
         android:id="@+id/ingredient_measure_tv"
@@ -27,21 +42,6 @@
         android:textStyle="italic"
         app:layout_constraintBaseline_toBaselineOf="@+id/ingredient_quantity_tv"
         app:layout_constraintStart_toEndOf="@+id/ingredient_quantity_tv"
-        tools:text="TBLSP" />
-
-    <CheckBox
-        android:id="@+id/ingredient_cb"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:textColor="@android:color/black"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Vanilla" />
+        tools:text="G" />
 
 </android.support.constraint.ConstraintLayout>
