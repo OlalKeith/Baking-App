@@ -2,6 +2,7 @@ package com.example.vidbregar.bakingapp.ui.recipe;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -15,9 +16,14 @@ import android.view.ViewGroup;
 import com.example.vidbregar.bakingapp.R;
 import com.example.vidbregar.bakingapp.model.Recipe;
 import com.example.vidbregar.bakingapp.model.RecipeStep;
+import com.example.vidbregar.bakingapp.room.AppDatabase;
+import com.example.vidbregar.bakingapp.room.RecipeStepEntity;
 import com.example.vidbregar.bakingapp.ui.recipe.adapter.IngredientsAdapter;
 import com.example.vidbregar.bakingapp.ui.recipe.adapter.RecipeStepsAdapter;
 import com.example.vidbregar.bakingapp.ui.recipe_step.RecipeStepActivity;
+import com.google.gson.Gson;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -25,7 +31,6 @@ import butterknife.ButterKnife;
 public class RecipeFragment extends Fragment implements IngredientsAdapter.OnCheckboxClickListener,
         RecipeStepsAdapter.OnRecipeStepClickListener {
 
-    public static final String RECIPE_STEP_EXTRA_KEY = "recipe-step-extra-key";
     public static final String RECIPE_TITLE_EXTRA_KEY = "recipe-title-extra-key";
 
     private static final String RECIPE_SAVE_STATE_KEY = "recipe-save-state-key";
@@ -34,14 +39,21 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
     private IngredientsAdapter ingredientsAdapter;
     private RecipeStepsAdapter recipeStepsAdapter;
 
+    @Inject
+    AppDatabase appDatabase;
+    @Inject
+    Gson gson;
+
     @BindView(R.id.ingredients_rv)
     RecyclerView ingredientsRecyclerView;
     @BindView(R.id.recipe_steps_rv)
     RecyclerView recipeStepsRecyclerView;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onAttach(Context context) {
+        RecipeActivity recipeActivity = (RecipeActivity) getActivity();
+        recipeActivity.fragmentDispatchingAndroidInjector.inject(this);
+        super.onAttach(context);
     }
 
     @Nullable
@@ -106,9 +118,28 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
 
     @Override
     public void onRecipeStepClick(RecipeStep recipeStep) {
-        Intent launchRecipeStepActivity = new Intent(getActivity(), RecipeStepActivity.class);
-        launchRecipeStepActivity.putExtra(RECIPE_STEP_EXTRA_KEY, recipeStep);
-        launchRecipeStepActivity.putExtra(RECIPE_TITLE_EXTRA_KEY, recipe.getName());
-        startActivity(launchRecipeStepActivity);
+        new AsyncOpenRecipeStep().execute(recipeStep);
+    }
+
+    private class AsyncOpenRecipeStep extends AsyncTask<RecipeStep, Void, Void> {
+
+        @Override
+        protected Void doInBackground(RecipeStep... recipeSteps) {
+            String recipeStepJson = gson.toJson(recipeSteps[0]);
+            RecipeStepEntity recipeStepEntity = new RecipeStepEntity(1,
+                    recipe.getName(),
+                    recipeStepJson,
+                    0,
+                    true);
+            appDatabase.recipeStepDao().updateSelectedRecipeStep(recipeStepEntity);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            Intent launchRecipeStepActivity = new Intent(getActivity(), RecipeStepActivity.class);
+            launchRecipeStepActivity.putExtra(RECIPE_TITLE_EXTRA_KEY, recipe.getName());
+            startActivity(launchRecipeStepActivity);
+        }
     }
 }

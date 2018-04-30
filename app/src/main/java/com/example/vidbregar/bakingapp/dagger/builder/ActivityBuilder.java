@@ -5,6 +5,7 @@ import com.example.vidbregar.bakingapp.ui.main.MainFragmentProvider;
 import com.example.vidbregar.bakingapp.ui.recipe.RecipeActivity;
 import com.example.vidbregar.bakingapp.ui.recipe.RecipeFragmentProvider;
 import com.example.vidbregar.bakingapp.ui.recipe_step.RecipeStepActivity;
+import com.example.vidbregar.bakingapp.ui.recipe_step.RecipeStepFragmentProvider;
 
 import dagger.Module;
 import dagger.android.ContributesAndroidInjector;
@@ -18,6 +19,6 @@ public abstract class ActivityBuilder {
     @ContributesAndroidInjector(modules = RecipeFragmentProvider.class)
     abstract RecipeActivity bindRecipeActivity();
 
-    @ContributesAndroidInjector
+    @ContributesAndroidInjector(modules = RecipeStepFragmentProvider.class)
     abstract RecipeStepActivity bindRecipeStepActivity();
 }

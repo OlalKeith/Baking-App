@@ -7,6 +7,7 @@ import android.arch.persistence.room.RoomDatabase;
 import android.support.annotation.NonNull;
 
 import com.example.vidbregar.bakingapp.room.AppDatabase;
+import com.example.vidbregar.bakingapp.room.RecipeStepEntity;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -61,7 +62,7 @@ public class AppModule {
     @Provides
     AppDatabase provideAppDatabase(Application application) {
         return Room.databaseBuilder(application, AppDatabase.class, "recipe-database.db")
-                .allowMainThreadQueries()
+                .allowMainThreadQueries() // Only for widget queries
                 .addCallback(new RoomDatabase.Callback() {
                     @Override
                     public void onCreate(@NonNull SupportSQLiteDatabase db) {
@@ -69,6 +70,14 @@ public class AppModule {
                         String sql = "INSERT INTO recipe_table (id, recipe_json) VALUES (1, '')";
                         new Thread(() -> db.execSQL(sql)).run();
                     }
-                }).build();
+                }).addCallback(new RoomDatabase.Callback() {
+                    @Override
+                    public void onCreate(@NonNull SupportSQLiteDatabase db) {
+                        super.onCreate(db);
+                        String sql = "INSERT INTO recipe_step_table (id, recipeTitle, recipeStepJson, currentPosition, isPlaying) VALUES (1, '', '', 0, 0)";
+                        new Thread(() -> db.execSQL(sql)).run();
+                    }
+                })
+                .build();
     }
 }

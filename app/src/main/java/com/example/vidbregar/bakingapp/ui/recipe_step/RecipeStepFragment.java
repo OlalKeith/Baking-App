@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -24,6 +25,8 @@ import android.widget.TextView;
 
 import com.example.vidbregar.bakingapp.R;
 import com.example.vidbregar.bakingapp.model.RecipeStep;
+import com.example.vidbregar.bakingapp.room.AppDatabase;
+import com.example.vidbregar.bakingapp.room.RecipeStepEntity;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.PlaybackParameters;
@@ -41,6 +44,9 @@ import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+import com.google.gson.Gson;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -49,13 +55,22 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
 
     private static final String TAG = RecipeStepFragment.class.getSimpleName();
 
+    private static final String RECIPE_STEP_SAVE_STATE_KEY = "recipe-step-data-key";
+    private static final String CURRENT_PLAYER_POSITION_SAVE_STATE_KEY = "current-position-save-state-key";
+    private static final String IS_PLAYING_SAVE_STATE_KEY = "is-playing-save-state-key";
+
     private Context context;
     private RecipeStep recipeStep;
     private SimpleExoPlayer simpleExoPlayer;
     private static MediaSessionCompat mediaSession;
     private PlaybackStateCompat.Builder playbackStateBuilder;
-    private boolean isPlaying;
-    private long currentPlayerPosition;
+    private boolean isPlaying = true;
+    private long currentPlayerPosition = 0;
+
+    @Inject
+    AppDatabase appDatabase;
+    @Inject
+    Gson gson;
 
     @BindView(R.id.recipe_step_player_view)
     PlayerView recipeStepPlayerView;
@@ -73,17 +88,10 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
     ProgressBar videoLoadingProgressBar;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getArgumentsFromActivity(getArguments());
-    }
-
-    private void getArgumentsFromActivity(Bundle args) {
-        if (args != null) {
-            recipeStep = args.getParcelable(RecipeStepActivity.RECIPE_STEP_ARGS_KEY);
-            currentPlayerPosition = args.getLong(RecipeStepActivity.CURRENT_POSITION_ARGS_KEY);
-            isPlaying = args.getBoolean(RecipeStepActivity.IS_PLAYING_ARGS_KEY);
-        }
+    public void onAttach(Context context) {
+        RecipeStepActivity recipeStepActivity = (RecipeStepActivity) getActivity();
+        recipeStepActivity.dispatchingAndroidInjector.inject(this);
+        super.onAttach(context);
     }
 
     @Nullable
@@ -94,10 +102,39 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
         View rootView = inflater.inflate(R.layout.fragment_recipe_step, container, false);
         context = rootView.getContext();
         ButterKnife.bind(this, rootView);
-
-        initialize();
-
+        if (savedInstanceState != null) {
+            restoreInstance(savedInstanceState);
+        } else {
+            new AsyncFragmentUpdate().execute();
+        }
         return rootView;
+    }
+
+    private void restoreInstance(Bundle savedInstanceState) {
+        if (savedInstanceState.containsKey(RECIPE_STEP_SAVE_STATE_KEY) &&
+                savedInstanceState.containsKey(CURRENT_PLAYER_POSITION_SAVE_STATE_KEY) &&
+                savedInstanceState.containsKey(IS_PLAYING_SAVE_STATE_KEY)) {
+            recipeStep = savedInstanceState.getParcelable(RECIPE_STEP_SAVE_STATE_KEY);
+            currentPlayerPosition = savedInstanceState.getLong(CURRENT_PLAYER_POSITION_SAVE_STATE_KEY);
+            isPlaying = savedInstanceState.getBoolean(IS_PLAYING_SAVE_STATE_KEY);
+            initialize();
+        }
+    }
+
+    private class AsyncFragmentUpdate extends AsyncTask<Void, Void, RecipeStepEntity> {
+
+        @Override
+        protected RecipeStepEntity doInBackground(Void... voids) {
+            return appDatabase.recipeStepDao().getSelectedRecipeStep();
+        }
+
+        @Override
+        protected void onPostExecute(RecipeStepEntity selectedRecipeStep) {
+            isPlaying = selectedRecipeStep.isPlaying();
+            currentPlayerPosition = selectedRecipeStep.getCurrentPosition();
+            recipeStep = gson.fromJson(selectedRecipeStep.getRecipeStepJson(), RecipeStep.class);
+            initialize();
+        }
     }
 
     private void initialize() {
@@ -257,14 +294,6 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
         }
     }
 
-    protected long getCurrentPlayerPosition() {
-        return currentPlayerPosition;
-    }
-
-    protected boolean isPlaying() {
-        return isPlaying;
-    }
-
     public static class MediaReceiver extends BroadcastReceiver {
 
         public MediaReceiver() {
@@ -275,6 +304,14 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
         public void onReceive(Context context, Intent intent) {
             MediaButtonReceiver.handleIntent(mediaSession, intent);
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putParcelable(RECIPE_STEP_SAVE_STATE_KEY, recipeStep);
+        outState.putLong(CURRENT_PLAYER_POSITION_SAVE_STATE_KEY, currentPlayerPosition);
+        outState.putBoolean(IS_PLAYING_SAVE_STATE_KEY, isPlaying);
+        super.onSaveInstanceState(outState);
     }
 
     // @formatter:off
