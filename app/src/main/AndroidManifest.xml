@@ -22,6 +22,7 @@
         <activity
             android:name=".ui.recipe.RecipeActivity"
             android:parentActivityName=".ui.main.MainActivity">
+
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -30,11 +31,27 @@
         <activity
             android:name=".ui.recipe_step.RecipeStepActivity"
             android:parentActivityName=".ui.recipe.RecipeActivity">
+
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.recipe.RecipeActivity" />
         </activity>
+
+        <receiver android:name=".widget.BakingAppWidget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/baking_app_widget_info" />
+        </receiver>
+
+        <service
+            android:name=".widget.BakingWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
     </application>
 
 </manifest>

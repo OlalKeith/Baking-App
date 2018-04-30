@@ -1,12 +1,13 @@
 package com.example.vidbregar.bakingapp.ui.recipe;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -14,6 +15,7 @@ import com.example.vidbregar.bakingapp.R;
 import com.example.vidbregar.bakingapp.model.Recipe;
 import com.example.vidbregar.bakingapp.room.AppDatabase;
 import com.example.vidbregar.bakingapp.ui.main.MainFragment;
+import com.example.vidbregar.bakingapp.widget.BakingAppWidget;
 import com.google.gson.Gson;
 
 import javax.inject.Inject;
@@ -90,7 +92,7 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.add_to_widget_action:
-                new AsyncUpdate().execute();
+                new AsyncWidgetUpdate().execute();
                 return true;
             case android.R.id.home:
                 finish();
@@ -111,7 +113,7 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
         return fragmentDispatchingAndroidInjector;
     }
 
-    private class AsyncUpdate extends AsyncTask<Void, Void, Integer> {
+    private class AsyncWidgetUpdate extends AsyncTask<Void, Void, Integer> {
 
         @Override
         protected Integer doInBackground(Void... voids) {
@@ -120,9 +122,18 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
 
         @Override
         protected void onPostExecute(Integer integer) {
+            // There should be only one record at a time and it should have id 1
             if (integer == 1) {
-                // TODO: 30/04/2018 Update widget
+                updateWidget();
             }
+        }
+
+        private void updateWidget() {
+            Intent updateWidgetIntent = new Intent(RecipeActivity.this, BakingAppWidget.class);
+            updateWidgetIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            int[] ids = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), BakingAppWidget.class));
+            updateWidgetIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+            sendBroadcast(updateWidgetIntent);
         }
     }
 }
