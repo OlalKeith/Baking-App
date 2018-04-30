@@ -7,6 +7,7 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -35,11 +36,11 @@ import retrofit2.Retrofit;
 public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeClickListener {
 
     public static final String RECIPE_EXTRA_KEY = "recipe-extra-key";
-    private static final String LIST_POSITION_SAVE_STATE_KEY = "list-position-save-state-key";
+    private static final String RECYCLER_VIEW_POSITION_SAVE_STATE_KEY = "list-position-save-state-key";
 
     private RecipesAdapter recipesAdapter;
     private Disposable recipeDisposable;
-    private RecyclerView.LayoutManager linearLayoutManager;
+    private RecyclerView.LayoutManager layoutManager;
     private Parcelable listPositionState;
 
     @Inject
@@ -68,22 +69,35 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
     }
 
     private void initialize(Context context, Bundle savedInstanceState) {
-        prepareRecipeList(context, savedInstanceState);
+        boolean isTablet = getResources().getBoolean(R.bool.isTablet);
+        if (isTablet) {
+            prepareRecipeGrid(context, savedInstanceState);
+        } else {
+            prepareRecipeList(context, savedInstanceState);
+        }
         sendNetworkGetRequest();
     }
 
-    private void prepareRecipeList(Context context, Bundle savedInstanceState) {
-        linearLayoutManager = new LinearLayoutManager(context);
+    private void prepareRecipeGrid(Context context, Bundle savedInstanceState) {
+        layoutManager = new GridLayoutManager(context, 3);
         restoreListPosition(savedInstanceState);
-        recipesRecyclerView.setLayoutManager(linearLayoutManager);
+        recipesRecyclerView.setLayoutManager(layoutManager);
+        recipesAdapter = new RecipesAdapter(this);
+        recipesRecyclerView.setAdapter(recipesAdapter);
+    }
+
+    private void prepareRecipeList(Context context, Bundle savedInstanceState) {
+        layoutManager = new LinearLayoutManager(context);
+        restoreListPosition(savedInstanceState);
+        recipesRecyclerView.setLayoutManager(layoutManager);
         recipesAdapter = new RecipesAdapter(this);
         recipesRecyclerView.setAdapter(recipesAdapter);
     }
 
     private void restoreListPosition(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(LIST_POSITION_SAVE_STATE_KEY))
-                listPositionState = savedInstanceState.getParcelable(LIST_POSITION_SAVE_STATE_KEY);
+            if (savedInstanceState.containsKey(RECYCLER_VIEW_POSITION_SAVE_STATE_KEY))
+                listPositionState = savedInstanceState.getParcelable(RECYCLER_VIEW_POSITION_SAVE_STATE_KEY);
         }
     }
 
@@ -94,7 +108,7 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe((data) -> {
                     recipesAdapter.setRecipes(data);
-                    linearLayoutManager.onRestoreInstanceState(listPositionState);
+                    layoutManager.onRestoreInstanceState(listPositionState);
                 });
 
     }
@@ -109,7 +123,7 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelable(LIST_POSITION_SAVE_STATE_KEY, linearLayoutManager.onSaveInstanceState());
+        outState.putParcelable(RECYCLER_VIEW_POSITION_SAVE_STATE_KEY, layoutManager.onSaveInstanceState());
     }
 
     @Override
