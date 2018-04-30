@@ -1,10 +1,12 @@
 package com.example.vidbregar.bakingapp.ui.recipe;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -88,8 +90,7 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.add_to_widget_action:
-                // TODO: 29/04/2018 Update widget
-                appDatabase.recipeDao().updateRecipe(gson.toJson(recipe));
+                new AsyncUpdate().execute();
                 return true;
             case android.R.id.home:
                 finish();
@@ -108,5 +109,20 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
     @Override
     public AndroidInjector<Fragment> supportFragmentInjector() {
         return fragmentDispatchingAndroidInjector;
+    }
+
+    private class AsyncUpdate extends AsyncTask<Void, Void, Integer> {
+
+        @Override
+        protected Integer doInBackground(Void... voids) {
+            return appDatabase.recipeDao().updateRecipe(gson.toJson(recipe));
+        }
+
+        @Override
+        protected void onPostExecute(Integer integer) {
+            if (integer == 1) {
+                // TODO: 30/04/2018 Update widget
+            }
+        }
     }
 }

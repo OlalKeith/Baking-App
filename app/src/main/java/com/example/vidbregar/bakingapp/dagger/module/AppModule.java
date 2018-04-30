@@ -1,7 +1,10 @@
 package com.example.vidbregar.bakingapp.dagger.module;
 
 import android.app.Application;
+import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.Room;
+import android.arch.persistence.room.RoomDatabase;
+import android.support.annotation.NonNull;
 
 import com.example.vidbregar.bakingapp.room.AppDatabase;
 import com.example.vidbregar.bakingapp.room.RecipeEntity;
@@ -58,16 +61,13 @@ public class AppModule {
     @Singleton
     @Provides
     AppDatabase provideAppDatabase(Application application) {
-        AppDatabase appDatabase = Room.databaseBuilder(application, AppDatabase.class, "recipe-database")
-                // TODO: 29/04/2018 Only for debugging -> don't allow querying on main thread
-                .allowMainThreadQueries()
-                .build();
-        if (appDatabase.recipeDao().getRecipe() == null) {
-            RecipeEntity recipeEntity = new RecipeEntity();
-            recipeEntity.setId(1);
-            recipeEntity.setRecipeJson("");
-            appDatabase.recipeDao().insertRecipe(recipeEntity);
-        }
-        return appDatabase;
+        return Room.databaseBuilder(application, AppDatabase.class, "recipe-database.db")
+                .addCallback(new RoomDatabase.Callback() {
+                    @Override
+                    public void onCreate(@NonNull SupportSQLiteDatabase db) {
+                        super.onCreate(db);
+                        new Thread(() -> db.execSQL("INSERT INTO recipe_table (id, recipe_json) VALUES (1, '')")).run();
+                    }
+                }).build();
     }
 }

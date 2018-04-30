@@ -11,7 +11,7 @@ public interface RecipeDao {
     RecipeEntity getRecipe();
 
     @Query("UPDATE recipe_table SET recipe_json = :jsonRecipe WHERE id = 1")
-    void updateRecipe(String jsonRecipe);
+    int updateRecipe(String jsonRecipe);
 
     @Insert
     void insertRecipe(RecipeEntity recipeEntity);

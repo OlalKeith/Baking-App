@@ -15,6 +15,11 @@ public class RecipeEntity {
     @Nullable
     private String recipeJson;
 
+    public RecipeEntity(int id, String recipeJson) {
+        this.id = id;
+        this.recipeJson = recipeJson;
+    }
+
     public int getId() {
         return id;
     }
