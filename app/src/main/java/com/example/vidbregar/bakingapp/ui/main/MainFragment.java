@@ -2,6 +2,7 @@ package com.example.vidbregar.bakingapp.ui.main;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -13,6 +14,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import com.example.vidbregar.bakingapp.R;
 import com.example.vidbregar.bakingapp.model.Recipe;
@@ -42,12 +44,15 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
     private Disposable recipeDisposable;
     private RecyclerView.LayoutManager layoutManager;
     private Parcelable listPositionState;
+    private boolean isNetworkAvailable;
 
     @Inject
     Retrofit retrofit;
 
     @BindView(R.id.recipes_rv)
     RecyclerView recipesRecyclerView;
+    @BindView(R.id.no_internet_connection_container)
+    LinearLayout noInternetConnectionContainer;
 
     @Override
     public void onAttach(Context context) {
@@ -62,10 +67,22 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
                              @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ButterKnife.bind(this, rootView);
-
-        initialize(rootView.getContext(), savedInstanceState);
-
+        Context context = rootView.getContext();
+        if (isNetworkAvailable(context)) {
+            noInternetConnectionContainer.setVisibility(View.GONE);
+            recipesRecyclerView.setVisibility(View.VISIBLE);
+            initialize(rootView.getContext(), savedInstanceState);
+        } else {
+            recipesRecyclerView.setVisibility(View.GONE);
+            noInternetConnectionContainer.setVisibility(View.VISIBLE);
+        }
         return rootView;
+    }
+
+    private boolean isNetworkAvailable(Context context) {
+        final ConnectivityManager connectivityManager = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
+        isNetworkAvailable = connectivityManager.getActiveNetworkInfo() != null && connectivityManager.getActiveNetworkInfo().isConnected();
+        return isNetworkAvailable;
     }
 
     private void initialize(Context context, Bundle savedInstanceState) {
@@ -123,7 +140,9 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelable(RECYCLER_VIEW_POSITION_SAVE_STATE_KEY, layoutManager.onSaveInstanceState());
+        if (isNetworkAvailable) {
+            outState.putParcelable(RECYCLER_VIEW_POSITION_SAVE_STATE_KEY, layoutManager.onSaveInstanceState());
+        }
     }
 
     @Override
