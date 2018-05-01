@@ -72,7 +72,8 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ButterKnife.bind(this, rootView);
         Context context = rootView.getContext();
-        if (isNetworkAvailable(context)) {
+        isNetworkAvailable = isNetworkAvailable(context);
+        if (isNetworkAvailable) {
             noInternetConnectionContainer.setVisibility(View.GONE);
             recipesRecyclerView.setVisibility(View.VISIBLE);
             initialize(rootView.getContext(), savedInstanceState);
@@ -86,15 +87,17 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
 
     private void setRefreshFragmentImageButtonOnClick(Context context) {
         refreshFragmentImageButton.setOnClickListener(view -> {
-            Intent refreshIntent = new Intent(context, MainActivity.class);
-            startActivity(refreshIntent);
+            if (isNetworkAvailable(context)) {
+                Intent refreshIntent = new Intent(context, MainActivity.class);
+                refreshIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(refreshIntent);
+            }
         });
     }
 
     private boolean isNetworkAvailable(Context context) {
         final ConnectivityManager connectivityManager = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
-        isNetworkAvailable = connectivityManager.getActiveNetworkInfo() != null && connectivityManager.getActiveNetworkInfo().isConnected();
-        return isNetworkAvailable;
+        return connectivityManager.getActiveNetworkInfo() != null && connectivityManager.getActiveNetworkInfo().isConnected();
     }
 
     private void initialize(Context context, Bundle savedInstanceState) {

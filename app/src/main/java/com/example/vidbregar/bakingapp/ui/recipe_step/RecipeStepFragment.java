@@ -27,6 +27,7 @@ import com.example.vidbregar.bakingapp.R;
 import com.example.vidbregar.bakingapp.model.RecipeStep;
 import com.example.vidbregar.bakingapp.room.AppDatabase;
 import com.example.vidbregar.bakingapp.room.RecipeStepEntity;
+import com.example.vidbregar.bakingapp.ui.recipe.RecipeActivity;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.PlaybackParameters;
@@ -66,6 +67,7 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
     private PlaybackStateCompat.Builder playbackStateBuilder;
     private boolean isPlaying = true;
     private long currentPlayerPosition = 0;
+    private boolean isTablet;
 
     @Inject
     AppDatabase appDatabase;
@@ -86,11 +88,20 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
     ScrollView recipeInstructionsContainer; // Available only in landscape mode
     @BindView(R.id.video_loading_progress_bar)
     ProgressBar videoLoadingProgressBar;
+    @Nullable
+    @BindView(R.id.no_recipe_step_selected_tv)
+    TextView noRecipeStepSelectedTextView; // Available only for tablets
 
     @Override
     public void onAttach(Context context) {
-        RecipeStepActivity recipeStepActivity = (RecipeStepActivity) getActivity();
-        recipeStepActivity.dispatchingAndroidInjector.inject(this);
+        isTablet = getResources().getBoolean(R.bool.isTablet);
+        if (isTablet) {
+            RecipeActivity recipeActivity = (RecipeActivity) getActivity();
+            recipeActivity.supportFragmentInjector().inject(this);
+        } else {
+            RecipeStepActivity recipeStepActivity = (RecipeStepActivity) getActivity();
+            recipeStepActivity.dispatchingAndroidInjector.inject(this);
+        }
         super.onAttach(context);
     }
 
@@ -117,7 +128,14 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
             recipeStep = savedInstanceState.getParcelable(RECIPE_STEP_SAVE_STATE_KEY);
             currentPlayerPosition = savedInstanceState.getLong(CURRENT_PLAYER_POSITION_SAVE_STATE_KEY);
             isPlaying = savedInstanceState.getBoolean(IS_PLAYING_SAVE_STATE_KEY);
-            initialize();
+            if (recipeStep != null) {
+                initialize();
+            } else if (isTablet) {
+                videoLoadingProgressBar.setVisibility(View.GONE);
+                noRecipeStepSelectedTextView.setVisibility(View.VISIBLE);
+            } else {
+                videoLoadingProgressBar.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -133,7 +151,12 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
             isPlaying = selectedRecipeStep.isPlaying();
             currentPlayerPosition = selectedRecipeStep.getCurrentPosition();
             recipeStep = gson.fromJson(selectedRecipeStep.getRecipeStepJson(), RecipeStep.class);
-            initialize();
+            if (recipeStep != null) {
+                initialize();
+            } else {
+                videoLoadingProgressBar.setVisibility(View.GONE);
+                noRecipeStepSelectedTextView.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -141,12 +164,21 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
         boolean hasVideo = !recipeStep.getVideoUrl().isEmpty();
         // It will be visible when video is ready to play
         recipeStepPlayerView.setVisibility(View.GONE);
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE && hasVideo) {
-            initializeLandscapeLayoutWithVideo();
-        } else if (hasVideo) {
-            initializePortraitLayoutWithVideo();
+        if (isTablet) {
+            noRecipeStepSelectedTextView.setVisibility(View.GONE);
+            if (hasVideo) {
+                initializePortraitLayoutWithVideo();
+            } else {
+                initializeLayoutWithoutVideo();
+            }
         } else {
-            initializeLayoutWithoutVideo();
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE && hasVideo) {
+                initializeLandscapeLayoutWithVideo();
+            } else if (hasVideo) {
+                initializePortraitLayoutWithVideo();
+            } else {
+                initializeLayoutWithoutVideo();
+            }
         }
     }
 

@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import com.example.vidbregar.bakingapp.R;
 import com.example.vidbregar.bakingapp.model.Recipe;
 import com.example.vidbregar.bakingapp.room.AppDatabase;
+import com.example.vidbregar.bakingapp.room.RecipeStepEntity;
 import com.example.vidbregar.bakingapp.ui.main.MainFragment;
 import com.example.vidbregar.bakingapp.widget.BakingAppWidget;
 import com.google.gson.Gson;
@@ -106,6 +107,25 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable(RECIPE_SAVE_STATE_KEY, recipe);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        clearSelectedRecipeStep();
+    }
+
+    private void clearSelectedRecipeStep() {
+        new AsyncClearRecipeStep().execute();
+    }
+
+    private class AsyncClearRecipeStep extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            appDatabase.recipeStepDao().updateSelectedRecipeStep(new RecipeStepEntity(1, "", "", 0, true));
+            return null;
+        }
     }
 
     @Override

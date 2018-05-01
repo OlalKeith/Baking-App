@@ -21,6 +21,7 @@ import com.example.vidbregar.bakingapp.room.RecipeStepEntity;
 import com.example.vidbregar.bakingapp.ui.recipe.adapter.IngredientsAdapter;
 import com.example.vidbregar.bakingapp.ui.recipe.adapter.RecipeStepsAdapter;
 import com.example.vidbregar.bakingapp.ui.recipe_step.RecipeStepActivity;
+import com.example.vidbregar.bakingapp.ui.recipe_step.RecipeStepFragment;
 import com.google.gson.Gson;
 
 import javax.inject.Inject;
@@ -38,6 +39,7 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
     private Recipe recipe;
     private IngredientsAdapter ingredientsAdapter;
     private RecipeStepsAdapter recipeStepsAdapter;
+    private boolean isTablet;
 
     @Inject
     AppDatabase appDatabase;
@@ -53,6 +55,7 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
     public void onAttach(Context context) {
         RecipeActivity recipeActivity = (RecipeActivity) getActivity();
         recipeActivity.fragmentDispatchingAndroidInjector.inject(this);
+        isTablet = getResources().getBoolean(R.bool.isTablet);
         super.onAttach(context);
     }
 
@@ -63,10 +66,23 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
                              @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_recipe, container, false);
         ButterKnife.bind(this, rootView);
-
-        initialize(savedInstanceState, rootView.getContext());
-
+        if (isTablet) {
+            if (savedInstanceState == null) {
+                prepareEmptyFragmentIfTablet();
+            }
+            initialize(savedInstanceState, rootView.getContext());
+        } else {
+            initialize(savedInstanceState, rootView.getContext());
+        }
         return rootView;
+    }
+
+    private void prepareEmptyFragmentIfTablet() {
+        RecipeStepFragment recipeStepFragment = new RecipeStepFragment();
+        getFragmentManager().beginTransaction()
+                .add(R.id.recipe_step_fragment_container, recipeStepFragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     private void initialize(Bundle savedInstanceState, Context context) {
@@ -137,9 +153,16 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            Intent launchRecipeStepActivity = new Intent(getActivity(), RecipeStepActivity.class);
-            launchRecipeStepActivity.putExtra(RECIPE_TITLE_EXTRA_KEY, recipe.getName());
-            startActivity(launchRecipeStepActivity);
+            if (isTablet) {
+                RecipeStepFragment recipeStepFragment = new RecipeStepFragment();
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.recipe_step_fragment_container, recipeStepFragment)
+                        .commit();
+            } else {
+                Intent launchRecipeStepActivity = new Intent(getActivity(), RecipeStepActivity.class);
+                launchRecipeStepActivity.putExtra(RECIPE_TITLE_EXTRA_KEY, recipe.getName());
+                startActivity(launchRecipeStepActivity);
+            }
         }
     }
 }
