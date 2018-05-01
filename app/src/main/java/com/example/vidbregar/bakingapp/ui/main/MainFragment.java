@@ -14,6 +14,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import com.example.vidbregar.bakingapp.R;
@@ -53,6 +54,9 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
     RecyclerView recipesRecyclerView;
     @BindView(R.id.no_internet_connection_container)
     LinearLayout noInternetConnectionContainer;
+    @Nullable
+    @BindView(R.id.refresh_image_button)
+    ImageButton refreshFragmentImageButton; // Available only if there is no internet connection
 
     @Override
     public void onAttach(Context context) {
@@ -75,8 +79,16 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
         } else {
             recipesRecyclerView.setVisibility(View.GONE);
             noInternetConnectionContainer.setVisibility(View.VISIBLE);
+            setRefreshFragmentImageButtonOnClick(context);
         }
         return rootView;
+    }
+
+    private void setRefreshFragmentImageButtonOnClick(Context context) {
+        refreshFragmentImageButton.setOnClickListener(view -> {
+            Intent refreshIntent = new Intent(context, MainActivity.class);
+            startActivity(refreshIntent);
+        });
     }
 
     private boolean isNetworkAvailable(Context context) {
