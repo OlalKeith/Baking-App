@@ -32,6 +32,8 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
     public static final String RECIPE_SAVE_STATE_KEY = "recipe-save-state-key";
 
     private Recipe recipe;
+    private boolean isTablet;
+
     @Inject
     AppDatabase appDatabase;
     @Inject
@@ -45,7 +47,7 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
         AndroidInjection.inject(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe);
-
+        isTablet = getResources().getBoolean(R.bool.isTablet);
         initialize(savedInstanceState);
     }
 
@@ -106,15 +108,22 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
     }
 
     @Override
+    public void onBackPressed() {
+        finish();
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable(RECIPE_SAVE_STATE_KEY, recipe);
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        clearSelectedRecipeStep();
+    protected void onPause() {
+        super.onPause();
+        if (isTablet) {
+            clearSelectedRecipeStep();
+        }
     }
 
     private void clearSelectedRecipeStep() {

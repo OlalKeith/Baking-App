@@ -11,11 +11,13 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NavUtils;
 import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -153,7 +155,7 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
             recipeStep = gson.fromJson(selectedRecipeStep.getRecipeStepJson(), RecipeStep.class);
             if (recipeStep != null) {
                 initialize();
-            } else {
+            } else if (isTablet) {
                 videoLoadingProgressBar.setVisibility(View.GONE);
                 noRecipeStepSelectedTextView.setVisibility(View.VISIBLE);
             }
