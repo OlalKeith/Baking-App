@@ -1,4 +1,4 @@
-
+![asset 9](https://user-images.githubusercontent.com/38810169/39525062-c324b804-4e3c-11e8-8720-83a1ad3bb8a0.png)
 # Baking App Project
 
 This project is part of the Udacity's [Android Developer Nanodegree](https://eu.udacity.com/course/android-developer-nanodegree-by-google--nd801).
