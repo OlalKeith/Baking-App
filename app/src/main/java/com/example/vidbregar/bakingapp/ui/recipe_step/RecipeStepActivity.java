@@ -30,7 +30,6 @@ public class RecipeStepActivity extends AppCompatActivity implements HasSupportF
         AndroidInjection.inject(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe_step);
-
         initialize(savedInstanceState);
     }
 

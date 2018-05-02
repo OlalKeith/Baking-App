@@ -33,7 +33,6 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
         RecipeStepsAdapter.OnRecipeStepClickListener {
 
     public static final String RECIPE_TITLE_EXTRA_KEY = "recipe-title-extra-key";
-
     private static final String RECIPE_SAVE_STATE_KEY = "recipe-save-state-key";
 
     private Recipe recipe;
@@ -55,7 +54,6 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
     public void onAttach(Context context) {
         RecipeActivity recipeActivity = (RecipeActivity) getActivity();
         recipeActivity.fragmentDispatchingAndroidInjector.inject(this);
-        isTablet = getResources().getBoolean(R.bool.isTablet);
         super.onAttach(context);
     }
 
@@ -66,15 +64,19 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
                              @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_recipe, container, false);
         ButterKnife.bind(this, rootView);
-        if (isTablet) {
-            if (savedInstanceState == null) {
-                prepareEmptyFragmentIfTablet();
-            }
-            initialize(savedInstanceState, rootView.getContext());
-        } else {
-            initialize(savedInstanceState, rootView.getContext());
-        }
+        initialize(savedInstanceState, rootView.getContext());
         return rootView;
+    }
+
+    private void initialize(Bundle savedInstanceState, Context context) {
+        isTablet = getResources().getBoolean(R.bool.isTablet);
+        if (isTablet && savedInstanceState == null) {
+            prepareEmptyFragmentIfTablet();
+        }
+        if (savedInstanceState != null) {
+            restoreFromSavedInstanceState(savedInstanceState);
+        }
+        prepareIngredientAndRecipeStepLists(context);
     }
 
     private void prepareEmptyFragmentIfTablet() {
@@ -83,13 +85,6 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
                 .add(R.id.recipe_step_fragment_container, recipeStepFragment)
                 .addToBackStack(null)
                 .commit();
-    }
-
-    private void initialize(Bundle savedInstanceState, Context context) {
-        if (savedInstanceState != null) {
-            restoreFromSavedInstanceState(savedInstanceState);
-        }
-        prepareIngredientAndRecipeStepLists(context);
     }
 
     private void restoreFromSavedInstanceState(Bundle savedInstanceState) {
@@ -114,6 +109,7 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
         recipeStepsRecyclerView.setAdapter(recipeStepsAdapter);
     }
 
+    // Used by RecipeActivity to pass a Recipe
     public void setRecipe(Recipe recipe) {
         this.recipe = recipe;
         ingredientsAdapter.setIngredients(recipe.getIngredients());
@@ -134,10 +130,10 @@ public class RecipeFragment extends Fragment implements IngredientsAdapter.OnChe
 
     @Override
     public void onRecipeStepClick(RecipeStep recipeStep) {
-        new AsyncOpenRecipeStep().execute(recipeStep);
+        new AsyncStartRecipeStep().execute(recipeStep);
     }
 
-    private class AsyncOpenRecipeStep extends AsyncTask<RecipeStep, Void, Void> {
+    private class AsyncStartRecipeStep extends AsyncTask<RecipeStep, Void, Void> {
 
         @Override
         protected Void doInBackground(RecipeStep... recipeSteps) {

@@ -42,8 +42,8 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
     private static final String RECYCLER_VIEW_POSITION_SAVE_STATE_KEY = "list-position-save-state-key";
 
     private RecipesAdapter recipesAdapter;
-    private Disposable recipeDisposable;
     private RecyclerView.LayoutManager layoutManager;
+    private Disposable recipeDisposable;
     private Parcelable listPositionState;
     private boolean isNetworkAvailable;
 
@@ -54,9 +54,8 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
     RecyclerView recipesRecyclerView;
     @BindView(R.id.no_internet_connection_container)
     LinearLayout noInternetConnectionContainer;
-    @Nullable
     @BindView(R.id.refresh_image_button)
-    ImageButton refreshFragmentImageButton; // Available only if there is no internet connection
+    ImageButton refreshFragmentImageButton;
 
     @Override
     public void onAttach(Context context) {
@@ -72,6 +71,11 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ButterKnife.bind(this, rootView);
         Context context = rootView.getContext();
+        checkNetworkAndInitialize(context, rootView, savedInstanceState);
+        return rootView;
+    }
+
+    private void checkNetworkAndInitialize(Context context, View rootView, Bundle savedInstanceState) {
         isNetworkAvailable = isNetworkAvailable(context);
         if (isNetworkAvailable) {
             noInternetConnectionContainer.setVisibility(View.GONE);
@@ -80,24 +84,15 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
         } else {
             recipesRecyclerView.setVisibility(View.GONE);
             noInternetConnectionContainer.setVisibility(View.VISIBLE);
-            setRefreshFragmentImageButtonOnClick(context);
+            setRefreshFragmentButtonOnClick(context);
         }
-        return rootView;
-    }
-
-    private void setRefreshFragmentImageButtonOnClick(Context context) {
-        refreshFragmentImageButton.setOnClickListener(view -> {
-            if (isNetworkAvailable(context)) {
-                Intent refreshIntent = new Intent(context, MainActivity.class);
-                refreshIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(refreshIntent);
-            }
-        });
     }
 
     private boolean isNetworkAvailable(Context context) {
-        final ConnectivityManager connectivityManager = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
-        return connectivityManager.getActiveNetworkInfo() != null && connectivityManager.getActiveNetworkInfo().isConnected();
+        final ConnectivityManager connectivityManager =
+                ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
+        return connectivityManager.getActiveNetworkInfo() != null &&
+                connectivityManager.getActiveNetworkInfo().isConnected();
     }
 
     private void initialize(Context context, Bundle savedInstanceState) {
@@ -143,6 +138,18 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
                     layoutManager.onRestoreInstanceState(listPositionState);
                 });
 
+    }
+
+    private void setRefreshFragmentButtonOnClick(Context context) {
+        refreshFragmentImageButton.setOnClickListener(view -> {
+            // Recheck internet connection when clicked
+            if (isNetworkAvailable(context)) {
+                Intent refreshIntent = new Intent(context, MainActivity.class);
+                // Remove current activity instance from back stack
+                refreshIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(refreshIntent);
+            }
+        });
     }
 
     @Override

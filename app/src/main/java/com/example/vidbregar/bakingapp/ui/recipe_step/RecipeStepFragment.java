@@ -11,13 +11,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.NavUtils;
 import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -82,20 +80,25 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
     TextView recipeStepTitleTextView;
     @BindView(R.id.recipe_step_description_tv)
     TextView recipeStepDescriptionTextView;
+    @BindView(R.id.video_loading_progress_bar)
+    ProgressBar videoLoadingProgressBar;
     @Nullable
     @BindView(R.id.recipe_step_container_frame_layout)
     FrameLayout recipeStepContainer; // Available only in landscape mode
     @Nullable
     @BindView(R.id.recipe_instructions_container)
     ScrollView recipeInstructionsContainer; // Available only in landscape mode
-    @BindView(R.id.video_loading_progress_bar)
-    ProgressBar videoLoadingProgressBar;
     @Nullable
     @BindView(R.id.no_recipe_step_selected_tv)
     TextView noRecipeStepSelectedTextView; // Available only for tablets
 
     @Override
     public void onAttach(Context context) {
+        inject();
+        super.onAttach(context);
+    }
+
+    private void inject() {
         isTablet = getResources().getBoolean(R.bool.isTablet);
         if (isTablet) {
             RecipeActivity recipeActivity = (RecipeActivity) getActivity();
@@ -104,7 +107,6 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
             RecipeStepActivity recipeStepActivity = (RecipeStepActivity) getActivity();
             recipeStepActivity.dispatchingAndroidInjector.inject(this);
         }
-        super.onAttach(context);
     }
 
     @Nullable
@@ -130,14 +132,17 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
             recipeStep = savedInstanceState.getParcelable(RECIPE_STEP_SAVE_STATE_KEY);
             currentPlayerPosition = savedInstanceState.getLong(CURRENT_PLAYER_POSITION_SAVE_STATE_KEY);
             isPlaying = savedInstanceState.getBoolean(IS_PLAYING_SAVE_STATE_KEY);
-            if (recipeStep != null) {
-                initialize();
-            } else if (isTablet) {
-                videoLoadingProgressBar.setVisibility(View.GONE);
-                noRecipeStepSelectedTextView.setVisibility(View.VISIBLE);
-            } else {
-                videoLoadingProgressBar.setVisibility(View.GONE);
-            }
+            initializeOrDisplayNoRecipeSelectedMessage();
+        }
+    }
+
+    // If RecipeStep = null, no recipe selected message is displayed only on tablets
+    private void initializeOrDisplayNoRecipeSelectedMessage() {
+        if (recipeStep != null) {
+            initialize();
+        } else if (isTablet) {
+            videoLoadingProgressBar.setVisibility(View.GONE);
+            noRecipeStepSelectedTextView.setVisibility(View.VISIBLE);
         }
     }
 
@@ -150,60 +155,48 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
 
         @Override
         protected void onPostExecute(RecipeStepEntity selectedRecipeStep) {
+            recipeStep = gson.fromJson(selectedRecipeStep.getRecipeStepJson(), RecipeStep.class);
             isPlaying = selectedRecipeStep.isPlaying();
             currentPlayerPosition = selectedRecipeStep.getCurrentPosition();
-            recipeStep = gson.fromJson(selectedRecipeStep.getRecipeStepJson(), RecipeStep.class);
-            if (recipeStep != null) {
-                initialize();
-            } else if (isTablet) {
-                videoLoadingProgressBar.setVisibility(View.GONE);
-                noRecipeStepSelectedTextView.setVisibility(View.VISIBLE);
-            }
+            initializeOrDisplayNoRecipeSelectedMessage();
         }
     }
 
     private void initialize() {
         boolean hasVideo = !recipeStep.getVideoUrl().isEmpty();
-        // It will be visible when video is ready to play
+        // Player will be visible when video is ready to play
         recipeStepPlayerView.setVisibility(View.GONE);
         if (isTablet) {
-            noRecipeStepSelectedTextView.setVisibility(View.GONE);
-            if (hasVideo) {
-                initializePortraitLayoutWithVideo();
-            } else {
-                initializeLayoutWithoutVideo();
-            }
+            initializeTabletLayout(hasVideo);
         } else {
-            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE && hasVideo) {
-                initializeLandscapeLayoutWithVideo();
-            } else if (hasVideo) {
-                initializePortraitLayoutWithVideo();
-            } else {
-                initializeLayoutWithoutVideo();
-            }
+            initializePhoneLayout(hasVideo);
         }
     }
 
-    private void initializeLandscapeLayoutWithVideo() {
-        recipeStepContainer.setBackgroundColor(Color.BLACK);
-        recipeInstructionsContainer.setVisibility(View.GONE);
-        prepareVideoPlayback();
+    private void initializeTabletLayout(boolean hasVideo) {
+        noRecipeStepSelectedTextView.setVisibility(View.GONE);
+        if (hasVideo) {
+            // The same layout is used in landscape and portrait modes
+            initializePortraitLayoutWithVideo();
+        } else {
+            initializeLayoutWithoutVideo();
+        }
+    }
+
+    private void initializePhoneLayout(boolean hasVideo) {
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE && hasVideo) {
+            initializeLandscapeLayoutWithVideo();
+        } else if (hasVideo) {
+            initializePortraitLayoutWithVideo();
+        } else {
+            initializeLayoutWithoutVideo();
+        }
     }
 
     private void initializePortraitLayoutWithVideo() {
         setPlayerAndLoadingIndicatorSize();
         addInstructionsToViews();
         prepareVideoPlayback();
-    }
-
-    private void initializeLayoutWithoutVideo() {
-        videoLoadingProgressBar.setVisibility(View.GONE);
-        addInstructionsToViews();
-    }
-
-    private void prepareVideoPlayback() {
-        initializeMediaSession();
-        initializePlayer(Uri.parse(recipeStep.getVideoUrl()));
     }
 
     private void setPlayerAndLoadingIndicatorSize() {
@@ -216,6 +209,22 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
         layoutParams.height = videoHeightPixels;
         videoLoadingProgressBar.setLayoutParams(layoutParams);
         recipeStepPlayerView.setLayoutParams(layoutParams);
+    }
+
+    private void initializeLayoutWithoutVideo() {
+        videoLoadingProgressBar.setVisibility(View.GONE);
+        addInstructionsToViews();
+    }
+
+    private void initializeLandscapeLayoutWithVideo() {
+        recipeStepContainer.setBackgroundColor(Color.BLACK);
+        recipeInstructionsContainer.setVisibility(View.GONE);
+        prepareVideoPlayback();
+    }
+
+    private void prepareVideoPlayback() {
+        initializeMediaSession();
+        initializePlayer(Uri.parse(recipeStep.getVideoUrl()));
     }
 
     private void addInstructionsToViews() {
@@ -239,7 +248,6 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
         mediaSession.setPlaybackState(playbackStateBuilder.build());
 
         mediaSession.setCallback(new MediaSessionCallbacks());
-
         mediaSession.setActive(true);
     }
 
@@ -280,7 +288,7 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
 
     }
 
-    class MediaSessionCallbacks extends MediaSessionCompat.Callback {
+    public class MediaSessionCallbacks extends MediaSessionCompat.Callback {
 
         @Override
         public void onPlay() {

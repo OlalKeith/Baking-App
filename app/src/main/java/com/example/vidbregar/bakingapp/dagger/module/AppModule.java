@@ -7,7 +7,6 @@ import android.arch.persistence.room.RoomDatabase;
 import android.support.annotation.NonNull;
 
 import com.example.vidbregar.bakingapp.room.AppDatabase;
-import com.example.vidbregar.bakingapp.room.RecipeStepEntity;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 

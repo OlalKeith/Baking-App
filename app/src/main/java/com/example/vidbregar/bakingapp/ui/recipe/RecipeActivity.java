@@ -47,11 +47,11 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
         AndroidInjection.inject(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe);
-        isTablet = getResources().getBoolean(R.bool.isTablet);
         initialize(savedInstanceState);
     }
 
     private void initialize(Bundle savedInstanceState) {
+        isTablet = getResources().getBoolean(R.bool.isTablet);
         if (savedInstanceState != null) {
             restoreFromSavedInstanceState(savedInstanceState);
         } else {
@@ -107,43 +107,6 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        finish();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putParcelable(RECIPE_SAVE_STATE_KEY, recipe);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (isTablet) {
-            clearSelectedRecipeStep();
-        }
-    }
-
-    private void clearSelectedRecipeStep() {
-        new AsyncClearRecipeStep().execute();
-    }
-
-    private class AsyncClearRecipeStep extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            appDatabase.recipeStepDao().updateSelectedRecipeStep(new RecipeStepEntity(1, "", "", 0, true));
-            return null;
-        }
-    }
-
-    @Override
-    public AndroidInjector<Fragment> supportFragmentInjector() {
-        return fragmentDispatchingAndroidInjector;
-    }
-
     private class AsyncWidgetUpdate extends AsyncTask<Void, Void, Integer> {
 
         @Override
@@ -166,5 +129,42 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
             updateWidgetIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
             sendBroadcast(updateWidgetIntent);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        finish();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(RECIPE_SAVE_STATE_KEY, recipe);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        clearSelectedRecipeStep();
+    }
+
+    private void clearSelectedRecipeStep() {
+        if (isTablet) {
+            new AsyncClearRecipeStep().execute();
+        }
+    }
+
+    private class AsyncClearRecipeStep extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            appDatabase.recipeStepDao().updateSelectedRecipeStep(new RecipeStepEntity(1, "", "", 0, true));
+            return null;
+        }
+    }
+
+    @Override
+    public AndroidInjector<Fragment> supportFragmentInjector() {
+        return fragmentDispatchingAndroidInjector;
     }
 }

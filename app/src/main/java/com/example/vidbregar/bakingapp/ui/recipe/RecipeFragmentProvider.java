@@ -6,6 +6,6 @@ import dagger.android.ContributesAndroidInjector;
 @Module
 public abstract class RecipeFragmentProvider {
 
-    @ContributesAndroidInjector(modules = RecipeFragmentModule.class)
+    @ContributesAndroidInjector
     abstract RecipeFragment bindRecipeFragment();
 }
