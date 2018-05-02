@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.example.vidbregar.bakingapp.R;
 import com.example.vidbregar.bakingapp.model.Recipe;
@@ -94,6 +95,7 @@ public class RecipeActivity extends AppCompatActivity implements HasSupportFragm
         switch (item.getItemId()) {
             case R.id.add_to_widget_action:
                 new AsyncWidgetUpdate().execute();
+                Toast.makeText(this, "Recipe added to widget", Toast.LENGTH_SHORT).show();
                 return true;
             case android.R.id.home:
                 finish();
