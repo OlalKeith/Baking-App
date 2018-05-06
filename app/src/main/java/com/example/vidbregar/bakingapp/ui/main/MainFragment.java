@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
+import android.support.test.espresso.IdlingResource;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,6 +20,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import com.example.vidbregar.bakingapp.R;
+import com.example.vidbregar.bakingapp.RecipeIdlingResource;
 import com.example.vidbregar.bakingapp.model.Recipe;
 import com.example.vidbregar.bakingapp.network.RecipeService;
 import com.example.vidbregar.bakingapp.ui.main.adapter.RecipesAdapter;
@@ -46,6 +49,7 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
     private Disposable recipeDisposable;
     private Parcelable listPositionState;
     private boolean isNetworkAvailable;
+    private RecipeIdlingResource idlingResource;
 
     @Inject
     Retrofit retrofit;
@@ -72,7 +76,14 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
         ButterKnife.bind(this, rootView);
         Context context = rootView.getContext();
         checkNetworkAndInitialize(context, rootView, savedInstanceState);
+        prepareIdlingResource();
         return rootView;
+    }
+
+    @VisibleForTesting
+    private void prepareIdlingResource() {
+        idlingResource = (RecipeIdlingResource) ((MainActivity) getActivity()).getIdlingResource();
+        idlingResource.setIdleState(false);
     }
 
     private void checkNetworkAndInitialize(Context context, View rootView, Bundle savedInstanceState) {
@@ -136,6 +147,9 @@ public class MainFragment extends Fragment implements RecipesAdapter.OnRecipeCli
                 .subscribe((data) -> {
                     recipesAdapter.setRecipes(data);
                     layoutManager.onRestoreInstanceState(listPositionState);
+                    if (idlingResource != null) {
+                        idlingResource.setIdleState(true);
+                    }
                 });
 
     }
