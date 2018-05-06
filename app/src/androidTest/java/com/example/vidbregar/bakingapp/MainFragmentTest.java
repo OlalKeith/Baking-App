@@ -29,6 +29,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static com.example.vidbregar.bakingapp.matcher.RecyclerViewMatcher.atPosition;
 import static org.hamcrest.CoreMatchers.not;
 
 @RunWith(AndroidJUnit4.class)
@@ -67,14 +68,14 @@ public class MainFragmentTest {
         // First item
         onView(withId(R.id.recipes_rv))
                 .perform(RecyclerViewActions.scrollToPosition(0))
-                .check(matches(hasDescendant(withText("Nutella Pie"))))
-                .check(matches(hasDescendant(withText("8"))));
+                .check(matches(atPosition(0, hasDescendant(withText("Nutella Pie")))))
+                .check(matches(atPosition(0, hasDescendant(withText("8")))));
 
         // Last item
         onView(withId(R.id.recipes_rv))
                 .perform(RecyclerViewActions.scrollToPosition(3))
-                .check(matches(hasDescendant(withText("Cheesecake"))))
-                .check(matches(hasDescendant(withText("8"))));
+                .check(matches(atPosition(3, hasDescendant(withText("Cheesecake")))))
+                .check(matches(atPosition(3, hasDescendant(withText("8")))));
     }
 
     @Before
@@ -87,6 +88,7 @@ public class MainFragmentTest {
     public void testClickingOnRecipe_shouldLaunchRecipeActivity() {
         onView(withId(R.id.recipes_rv))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+
         intended(hasComponent(RecipeActivity.class.getName()));
     }
 }
