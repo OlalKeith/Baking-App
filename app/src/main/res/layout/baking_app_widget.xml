@@ -5,20 +5,17 @@
     android:orientation="vertical">
 
     <TextView
+        style="@style/bold_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:layout_marginBottom="16dp"
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
-        android:fontFamily="@font/open_sans_extra_bold"
-        android:text="Ingredients"
-        android:textAllCaps="true"
-        android:textColor="@android:color/black"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+        android:text="@string/ingredients_widget_title"
+        android:textSize="24sp" />
 
-    <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+    <ListView
         android:id="@+id/ingredients_widget_list_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

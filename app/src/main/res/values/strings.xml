@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Baking App</string>
+    <string name="ingredients_widget_title">Ingredients</string>
+    <string name="no_internet_connection_message">No internet connection</string>
+    <string name="ingredients_list_title">Ingredients</string>
+    <string name="recipe_steps_list_title">Steps</string>
+    <string name="recipe_item_servings_label">Servings:</string>
+    <string name="menu_add_to_widget">Add to widget</string>
+    <string name="no_recipe_selected_text">Select a recipe step</string>
 </resources>

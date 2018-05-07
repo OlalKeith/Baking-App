@@ -50,7 +50,7 @@
             android:layout_marginBottom="4dp"
             android:layout_marginLeft="1dp"
             android:layout_marginStart="16dp"
-            android:text="Servings:"
+            android:text="@string/recipe_item_servings_label"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 

@@ -17,7 +17,7 @@
             android:layout_gravity="center_vertical"
             android:gravity="center_horizontal"
             android:padding="24dp"
-            android:text="Select a recipe step"
+            android:text="@string/no_recipe_selected_text"
             android:textColor="@android:color/black"
             android:textSize="24sp"
             android:visibility="gone" />
