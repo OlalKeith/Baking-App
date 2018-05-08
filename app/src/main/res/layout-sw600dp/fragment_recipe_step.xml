@@ -40,6 +40,14 @@
             android:layout_height="wrap_content"
             android:paddingBottom="24dp">
 
+            <ImageView
+                android:id="@+id/recipe_step_thumbnail"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
             <TextView
                 android:id="@+id/recipe_step_short_description_tv"
                 android:layout_width="match_parent"
@@ -54,7 +62,7 @@
                 android:textSize="24sp"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toTopOf="@id/recipe_step_thumbnail"
                 tools:text="Starting prep" />
 
             <TextView

@@ -19,10 +19,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.vidbregar.bakingapp.R;
 import com.example.vidbregar.bakingapp.model.RecipeStep;
 import com.example.vidbregar.bakingapp.room.AppDatabase;
@@ -82,6 +84,8 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
     TextView recipeStepDescriptionTextView;
     @BindView(R.id.video_loading_progress_bar)
     ProgressBar videoLoadingProgressBar;
+    @BindView(R.id.recipe_step_thumbnail)
+    ImageView recipeStepThumbnail;
     @Nullable
     @BindView(R.id.recipe_step_container_frame_layout)
     FrameLayout recipeStepContainer; // Available only in landscape mode
@@ -194,6 +198,7 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
     }
 
     private void initializePortraitLayoutWithVideo() {
+        recipeStepThumbnail.setVisibility(View.GONE);
         setPlayerAndLoadingIndicatorSize();
         addInstructionsToViews();
         prepareVideoPlayback();
@@ -213,10 +218,23 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
 
     private void initializeLayoutWithoutVideo() {
         videoLoadingProgressBar.setVisibility(View.GONE);
+        addRecipeStepThumbnail();
         addInstructionsToViews();
     }
 
+    private void addRecipeStepThumbnail() {
+        if (recipeStep.getThumbnailUrl() != null && !recipeStep.getThumbnailUrl().isEmpty()) {
+            recipeStepThumbnail.setVisibility(View.VISIBLE);
+            Glide.with(this)
+                    .load(recipeStep.getThumbnailUrl())
+                    .into(recipeStepThumbnail);
+        } else {
+            recipeStepThumbnail.setVisibility(View.GONE);
+        }
+    }
+
     private void initializeLandscapeLayoutWithVideo() {
+        recipeStepThumbnail.setVisibility(View.GONE);
         recipeStepContainer.setBackgroundColor(Color.BLACK);
         recipeInstructionsContainer.setVisibility(View.GONE);
         prepareVideoPlayback();
@@ -346,6 +364,7 @@ public class RecipeStepFragment extends Fragment implements Player.EventListener
         public void onReceive(Context context, Intent intent) {
             MediaButtonReceiver.handleIntent(mediaSession, intent);
         }
+
     }
 
     @Override
